@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"net/http"
 
 	"bankapp/config"
 
@@ -22,8 +21,5 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	fmt.Println(v1)
 
 	router = mux.NewRouter()
-
-	sh := http.StripPrefix("/docs/", http.FileServer(http.Dir("./swaggerui/")))
-	router.PathPrefix("/docs/").Handler(sh)
 	return
 }
