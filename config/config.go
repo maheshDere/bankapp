@@ -70,3 +70,7 @@ func checkIfSet(key string) {
 		panic(err)
 	}
 }
+
+func GetJwtKey() string {
+	return viper.GetString("JWT_ENCRYPTION_KEY")
+}
