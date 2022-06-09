@@ -3,10 +3,12 @@ package server
 import (
 	"bankapp/app"
 	"bankapp/db"
+	"bankapp/user"
 	"fmt"
 )
 
 type dependencies struct {
+	UserService user.Service
 }
 
 func initDependencies() (dependencies, error) {

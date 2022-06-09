@@ -17,6 +17,7 @@ const (
 )
 
 type Storer interface {
+	DeleteUserByID(ctx context.Context, id string) (err error)
 }
 
 type store struct {
@@ -67,7 +68,7 @@ func WithDefaultTimeout(ctx context.Context, op func(ctx context.Context) error)
 	return WithTimeout(ctx, defaultTimeout, op)
 }
 
-func NewStorer(d *sqlx.DB) Storer {
+func NewStorer(d *sqlx.DB) *store {
 	return &store{
 		db: d,
 	}

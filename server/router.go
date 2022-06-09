@@ -2,8 +2,10 @@ package server
 
 import (
 	"fmt"
+	"net/http"
 
 	"bankapp/config"
+	"bankapp/user"
 
 	"github.com/gorilla/mux"
 )
@@ -21,5 +23,11 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	fmt.Println(v1)
 
 	router = mux.NewRouter()
+	// User
+	router.HandleFunc("/user/{user_id}", user.DeleteByID(dep.UserService)).Methods(http.MethodDelete).Headers(versionHeader, v1)
+
+	sh := http.StripPrefix("/docs/", http.FileServer(http.Dir("./swaggerui/")))
+	router.PathPrefix("/docs/").Handler(sh)
 	return
+
 }
