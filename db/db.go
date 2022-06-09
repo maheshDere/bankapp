@@ -16,7 +16,8 @@ const (
 	defaultTimeout        = 1 * time.Second
 )
 
-type Storer interface {
+type TransactionStorer interface {
+	FindTransactionsById(ctx context.Context, accountId string) (transactions []Transaction, err error)
 }
 
 type store struct {
@@ -67,7 +68,7 @@ func WithDefaultTimeout(ctx context.Context, op func(ctx context.Context) error)
 	return WithTimeout(ctx, defaultTimeout, op)
 }
 
-func NewStorer(d *sqlx.DB) Storer {
+func NewStorer(d *sqlx.DB) TransactionStorer {
 	return &store{
 		db: d,
 	}
