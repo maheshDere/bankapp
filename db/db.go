@@ -19,6 +19,10 @@ const (
 type Storer interface {
 }
 
+type LoginStorer interface {
+	// Users
+	FindUserByEmail(ctx context.Context, email string) (user Users, err error)
+}
 type store struct {
 	db *sqlx.DB
 }
@@ -68,6 +72,12 @@ func WithDefaultTimeout(ctx context.Context, op func(ctx context.Context) error)
 }
 
 func NewStorer(d *sqlx.DB) Storer {
+	return &store{
+		db: d,
+	}
+}
+
+func NewLoginStorer(d *sqlx.DB) LoginStorer {
 	return &store{
 		db: d,
 	}
