@@ -1,9 +1,10 @@
 package server
 
 import (
-	"fmt"
-
 	"bankapp/config"
+	"bankapp/user"
+	"fmt"
+	"net/http"
 
 	"github.com/gorilla/mux"
 )
@@ -21,5 +22,13 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	fmt.Println(v1)
 
 	router = mux.NewRouter()
+
+	router.HandleFunc("/ping", pingHandler).Methods(http.MethodGet)
+	router.HandleFunc("/createuser", user.Create(dep.UserServices)).Methods(http.MethodPost).Headers(versionHeader, v1)
+
 	return
+}
+
+func pingHandler(rw http.ResponseWriter, req *http.Request) {
+	fmt.Println("Hello")
 }

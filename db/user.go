@@ -3,23 +3,24 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 const (
-	createUserQuery = `INSERT INTO user (
+	createUserQuery = `INSERT INTO users (
 		id,name,email,password,role_type)
 		VALUES($1,$2,$3,$4,$5)
 	`
 )
 
-type user struct {
-	Id        int    `json:"id"`
+type User struct {
+	Id        string `json:"id"`
 	Name      string `json:"name"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
-	Role_type int    `json:"role_type"`
+	Role_type string `json:"role_type"`
 }
 
 func HashPassword(password string) (string, error) {
@@ -27,10 +28,10 @@ func HashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func (s *store) CreateUser(ctx context.Context, user *user) (err error) {
+func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
 
 	password, err := HashPassword(user.Password)
-
+	fmt.Println("Inside the CreateUser db  user---->", user)
 	//add error handling here
 
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {

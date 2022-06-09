@@ -3,10 +3,12 @@ package server
 import (
 	"bankapp/app"
 	"bankapp/db"
+	"bankapp/user"
 	"fmt"
 )
 
 type dependencies struct {
+	UserServices user.Service
 }
 
 func initDependencies() (dependencies, error) {
@@ -16,6 +18,10 @@ func initDependencies() (dependencies, error) {
 
 	// call new service
 	// remove println later
+
+	userService := user.NewService(dbStore, logger)
 	fmt.Println(logger, dbStore)
-	return dependencies{}, nil
+	return dependencies{
+		UserServices: userService,
+	}, nil
 }
