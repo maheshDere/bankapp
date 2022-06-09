@@ -17,6 +17,7 @@ const (
 )
 
 type Storer interface {
+	CreateUser(ctx context.Context, user *user) (err error)
 }
 
 type store struct {
