@@ -9,10 +9,11 @@ import (
 )
 
 type config struct {
-	appName       string
-	appPort       int
-	migrationPath string
-	db            databaseConfig
+	appName        string
+	appPort        int
+	migrationPath  string
+	db             databaseConfig
+	myJWTSignature string
 }
 
 var appConfig config
@@ -31,10 +32,11 @@ func Load() {
 	viper.AutomaticEnv()
 
 	appConfig = config{
-		appName:       readEnvString("APP_NAME"),
-		appPort:       readEnvInt("APP_PORT"),
-		migrationPath: readEnvString("MIGRATION_PATH"),
-		db:            newDatabaseConfig(),
+		appName:        readEnvString("APP_NAME"),
+		appPort:        readEnvInt("APP_PORT"),
+		migrationPath:  readEnvString("MIGRATION_PATH"),
+		db:             newDatabaseConfig(),
+		myJWTSignature: readEnvString("MY_SIGNATURE"),
 	}
 }
 
@@ -48,6 +50,10 @@ func AppPort() int {
 
 func MigrationPath() string {
 	return appConfig.migrationPath
+}
+
+func JWTSignature() string {
+	return appConfig.myJWTSignature
 }
 
 func readEnvInt(key string) int {

@@ -1,16 +1,20 @@
 package login
 
 import (
+	"bankapp/config"
 	"bankapp/db"
 	"context"
 	"fmt"
+	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
 )
 
+var secretKey = []byte(config.JWTSignature())
+
 type Service interface {
-	login(ctx context.Context, req userLoginRequest) (err error)
+	login(ctx context.Context, req loginRequest) (tokenString string, err error)
 }
 
 type loginService struct {
@@ -18,7 +22,13 @@ type loginService struct {
 	logger *zap.SugaredLogger
 }
 
-func (ls *loginService) login(ctx context.Context, ul userLoginRequest) (err error) {
+type Claims struct {
+	Email string `json:"email"`
+	Role  int    `json:"role"`
+	jwt.StandardClaims
+}
+
+func (ls *loginService) login(ctx context.Context, ul loginRequest) (tokenString string, err error) {
 	fmt.Println("ul is --> ", ul.Email)
 	user, err := ls.store.FindUserByEmail(ctx, ul.Email)
 	// TODO: Handle the err
@@ -28,9 +38,9 @@ func (ls *loginService) login(ctx context.Context, ul userLoginRequest) (err err
 	// TODO: Handle wrong password
 
 	// Genrate the
-	err = generateJWT(user)
-
-	fmt.Println("user is --> ", user)
+	tokenString, err = generateJWT(user.Email, user.RoleType)
+	fmt.Println(" --> ", tokenString)
+	//fmt.Println("user is --> ", user)
 	return
 }
 
@@ -39,9 +49,22 @@ func authenticateUser(user db.Users) (err error) {
 	return
 }
 
-func generateJWT(user db.Users) (err error) {
-	token := jwt.New(jwt.SigningMethodES256)
-	claims := token.Claims.(jwt.MapClaims)
+func generateJWT(email string, roleType int) (tokenString string, err error) {
+	fmt.Println("inside generateJWT email is --> ", email)
+	expirationTime := time.Now().Add(time.Minute * 30).Unix()
+	claims := &Claims{
+		Email: email,
+		Role:  roleType,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime,
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err = token.SignedString(secretKey)
+	if err != nil {
+		fmt.Printf("Something Went Wrong: %s", err.Error())
+		return "", err
+	}
 	return
 }
 
