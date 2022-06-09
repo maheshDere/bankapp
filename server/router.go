@@ -1,9 +1,10 @@
 package server
 
 import (
-	"fmt"
-
 	"bankapp/config"
+	"bankapp/users"
+	"fmt"
+	"net/http"
 
 	"github.com/gorilla/mux"
 )
@@ -17,9 +18,7 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	// TODO: add doc
 	// v2 := fmt.Sprintf("application/vnd.%s.v2", config.AppName())
 
-	// Remove v1 later
-	fmt.Println(v1)
-
 	router = mux.NewRouter()
+	router.HandleFunc("/users", users.Update(dep.UserService)).Methods(http.MethodPut).Headers(versionHeader, v1)
 	return
 }

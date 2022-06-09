@@ -17,6 +17,7 @@ const (
 )
 
 type Storer interface {
+	UpdateUser(ctx context.Context, category *Users) (err error)
 }
 
 type store struct {
