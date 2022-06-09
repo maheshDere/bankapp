@@ -3,5 +3,5 @@ CREATE TABLE "account" (
   "opening_date" timestamp,
   "user_id" varchar(64),
   "created_at" timestamp,
-  CONSTRAINT "fk_user" FOREIGN KEY("user_id") REFERENCES "user"("id") ON DELETE CASCADE
+  CONSTRAINT "fk_user" FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE
 );

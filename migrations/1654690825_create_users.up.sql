@@ -1,4 +1,4 @@
-CREATE TABLE "user" (
+CREATE TABLE "users" (
   "id" varchar(64) PRIMARY KEY,
   "name" varchar(200) NOT NULL DEFAULT '',    
   "email" varchar(512) UNIQUE NOT NULL DEFAULT '',
