@@ -31,7 +31,7 @@ func HashPassword(password string) (string, error) {
 func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
 
 	password, err := HashPassword(user.Password)
-	fmt.Println("Inside the CreateUser db  user---->", user)
+	fmt.Println("Inside the CreateUser db  user---->", password)
 	//add error handling here
 
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
