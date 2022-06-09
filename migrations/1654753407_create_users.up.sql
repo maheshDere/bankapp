@@ -3,7 +3,7 @@ CREATE TABLE "users" (
   "name" varchar(200) NOT NULL DEFAULT '',    
   "email" varchar(512) UNIQUE NOT NULL DEFAULT '',
   "password" varchar(200),
-  "role_type" int, 
+  "role_type" user_role, 
   "created_at" timestamp,
   "updated_at" timestamp
 );
