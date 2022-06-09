@@ -17,6 +17,12 @@ const (
 )
 
 type Storer interface {
+	// Account
+	FindByUserID(ctx context.Context, userID string) (acc Account, err error)
+
+	// Transaction
+	DebitTransaction(ctx context.Context, t *Transaction) (err error)
+	GetTotalBalance(ctx context.Context, accountId string) (balance float64, err error)
 }
 
 type store struct {
