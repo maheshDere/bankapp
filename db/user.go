@@ -12,6 +12,7 @@ const (
 		id,name,email,password,role_type)
 		VALUES($1,$2,$3,$4,$5)
 	`
+	deleteUserByIDQuery = `DELETE FROM categories WHERE id = $1`
 )
 
 type user struct {
@@ -38,6 +39,20 @@ func (s *store) CreateUser(ctx context.Context, user *user) (err error) {
 			createUserQuery,
 			user.Id, user.Name, user.Email, password, user.Role_type,
 		)
+		return err
+	})
+}
+
+func (s *store) DeleteUserByID(ctx context.Context, id string) (err error) {
+	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
+		res, err := s.db.Exec(deleteUserByIDQuery, id)
+		cnt, err := res.RowsAffected()
+		if cnt == 0 {
+			return ErrUserNotExist
+		}
+		if err != nil {
+			return err
+		}
 		return err
 	})
 }
