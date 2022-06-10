@@ -3,10 +3,11 @@ package server
 import (
 	"bankapp/app"
 	"bankapp/db"
-	"fmt"
+	"bankapp/transaction"
 )
 
 type dependencies struct {
+	TransactionService transaction.TransactionService
 }
 
 func initDependencies() (dependencies, error) {
@@ -14,8 +15,9 @@ func initDependencies() (dependencies, error) {
 	logger := app.GetLogger()
 	dbStore := db.NewStorer(appDB)
 
-	// call new service
-	// remove println later
-	fmt.Println(logger, dbStore)
-	return dependencies{}, nil
+	transactionService := transaction.NewService(dbStore, logger)
+
+	return dependencies{
+		TransactionService: transactionService,
+	}, nil
 }

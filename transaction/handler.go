@@ -2,15 +2,15 @@ package transaction
 
 import (
 	"bankapp/api"
+	"fmt"
 	"net/http"
-
-	_ "api"
 
 	"github.com/gorilla/mux"
 )
 
-func FindByID(service transactionService) http.HandlerFunc {
+func FindByID(service TransactionService) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		fmt.Println("Inside the FindByID handler")
 		vars := mux.Vars(req)
 
 		resp, err := service.findByID(req.Context(), vars["account_id"])

@@ -2,8 +2,10 @@ package server
 
 import (
 	"fmt"
+	"net/http"
 
 	"bankapp/config"
+	"bankapp/transaction"
 
 	"github.com/gorilla/mux"
 )
@@ -19,6 +21,9 @@ func initRouter(dep dependencies) (router *mux.Router) {
 
 	// Remove v1 later
 	fmt.Println(v1)
+
+	router = mux.NewRouter()
+	router.HandleFunc("/transactions/{account_id}", transaction.FindByID(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
 
 	router = mux.NewRouter()
 	return

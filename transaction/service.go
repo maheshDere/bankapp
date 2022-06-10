@@ -7,6 +7,10 @@ import (
 	"go.uber.org/zap"
 )
 
+type TransactionService interface {
+	findByID(ctx context.Context, accId string) (response FindByTransactionIdResponse, err error)
+}
+
 type transactionService struct {
 	store  db.TransactionStorer
 	logger *zap.SugaredLogger
@@ -25,4 +29,11 @@ func (cs *transactionService) findByID(ctx context.Context, accountId string) (r
 
 	response.Transactions = transaction
 	return
+}
+
+func NewService(s db.TransactionStorer, l *zap.SugaredLogger) TransactionService {
+	return &transactionService{
+		store:  s,
+		logger: l,
+	}
 }
