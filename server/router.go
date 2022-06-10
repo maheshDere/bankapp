@@ -25,6 +25,5 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	router = mux.NewRouter()
 	router.HandleFunc("/transactions/{account_id}", transaction.FindByID(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
 
-	router = mux.NewRouter()
 	return
 }
