@@ -19,14 +19,14 @@ type userService struct {
 
 func (us *userService) create(ctx context.Context, req createRequest) (err error) {
 	fmt.Println("Inside create user service")
+
 	err = us.store.CreateUser(ctx, &db.User{
-		Id:        "1",
-		Name:      req.Name,
-		Email:     req.Email,
-		Password:  req.Password,
-		Role_type: req.RoleType,
+		Name:     req.Name,
+		Email:    req.Email,
+		RoleType: req.RoleType,
 	})
 
+	fmt.Println(err)
 	//add error handling
 
 	return
