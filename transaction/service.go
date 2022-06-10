@@ -11,6 +11,7 @@ import (
 
 type Service interface {
 	debitAmount(ctx context.Context, req debitRequest) (err error)
+	findByID(ctx context.Context, accId string) (response FindByTransactionIdResponse, err error)
 }
 
 type transactionService struct {
@@ -70,6 +71,20 @@ func (s *transactionService) debitAmount(ctx context.Context, req debitRequest) 
 	return
 }
 
+func (cs *transactionService) findByID(ctx context.Context, accountId string) (response FindByTransactionIdResponse, err error) {
+	transaction, err := cs.store.FindTransactionsById(ctx, accountId)
+	if err == db.ErrAccountNotExist {
+		cs.logger.Error("No Account present", "err", err.Error())
+		return response, errNoAccountId
+	}
+	if err != nil {
+		cs.logger.Error("Error finding Account", "err", err.Error(), "account_id", accountId)
+		return
+	}
+
+	response.Transactions = transaction
+	return
+}
 func NewService(store db.Storer, logger *zap.SugaredLogger) Service {
 	return &transactionService{
 		store:  store,

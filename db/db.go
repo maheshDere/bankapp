@@ -23,6 +23,7 @@ type Storer interface {
 	// Transaction
 	DebitTransaction(ctx context.Context, t *Transaction) (err error)
 	GetTotalBalance(ctx context.Context, accountId string) (balance float64, err error)
+	FindTransactionsById(ctx context.Context, accountId string) (transactions []Transaction, err error)
 }
 
 type store struct {

@@ -25,5 +25,7 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	transactionRoutes := router.PathPrefix("/transaction").Subrouter()
 	transactionRoutes.Use(middleware.TransactionMiddleware)
 	transactionRoutes.HandleFunc("/debit", transaction.DebitAmount(dep.TransactionService)).Methods(http.MethodPost).Headers(versionHeader, v1)
+	transactionRoutes.HandleFunc("/transactions/{account_id}", transaction.FindByID(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
+
 	return
 }
