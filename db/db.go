@@ -25,6 +25,7 @@ type Storer interface {
 	GetTotalBalance(ctx context.Context, accountId string) (balance float64, err error)
 	FindTransactionsById(ctx context.Context, accountId string) (transactions []Transaction, err error)
 	CreateUser(ctx context.Context, user *User) (err error)
+	UpdateUser(ctx context.Context, category *Users) (err error)
 }
 
 type store struct {
