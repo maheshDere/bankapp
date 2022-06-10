@@ -17,11 +17,19 @@ const (
 )
 
 type Storer interface {
+	// Account
+	FindByUserID(ctx context.Context, userID string) (acc Account, err error)
+
+	// Transaction
+	DebitTransaction(ctx context.Context, t *Transaction) (err error)
+	GetTotalBalance(ctx context.Context, accountId string) (balance float64, err error)
+	FindTransactionsById(ctx context.Context, accountId string) (transactions []Transaction, err error)
+	CreateUser(ctx context.Context, user *User) (err error)
 }
 
 type LoginStorer interface {
 	// Users
-	FindUserByEmail(ctx context.Context, email string) (user Users, err error)
+	FindUserByEmail(ctx context.Context, email string) (user User, err error)
 }
 type store struct {
 	db *sqlx.DB
