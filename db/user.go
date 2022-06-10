@@ -57,19 +57,27 @@ func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		_, err = s.db.Exec(
 			createUserQuery,
-			id, user.Name, user.Email, password, user.RoleType, now, now,
+			id,
+			user.Name,
+			user.Email,
+			password,
+			user.RoleType,
+			now,
+			now,
 		)
 		if err != nil {
 			return err
 		}
 
-		_, err = s.db.Exec(
-			createAccount,
-			accountId,
-			now,
-			id,
-			now,
-		)
+		if user.RoleType == "customer" {
+			_, err = s.db.Exec(
+				createAccount,
+				accountId,
+				now,
+				id,
+				now,
+			)
+		}
 		return err
 	})
 }
