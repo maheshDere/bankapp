@@ -8,14 +8,14 @@ import (
 )
 
 type Service interface {
-	update(ctx context.Context, req updateRequest) (err error)
+	update(ctx context.Context, req updateRequest, userId string) (err error)
 }
 type userService struct {
 	store  db.Storer
 	logger *zap.SugaredLogger
 }
 
-func (cs *userService) update(ctx context.Context, c updateRequest) (err error) {
+func (cs *userService) update(ctx context.Context, c updateRequest, userID string) (err error) {
 	err = c.Validate()
 	if err != nil {
 		cs.logger.Error("Invalid Request for category update", "err", err.Error(), "users", c)
@@ -25,6 +25,7 @@ func (cs *userService) update(ctx context.Context, c updateRequest) (err error) 
 	err = cs.store.UpdateUser(ctx, &db.Users{
 		Password: c.Password, //pass encrypt
 		Name:     c.Name,
+		ID:       userID,
 	})
 	if err != nil {
 		cs.logger.Error("Error updating User", "err", err.Error(), "users", c)
