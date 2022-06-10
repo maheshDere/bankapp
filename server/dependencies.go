@@ -19,5 +19,10 @@ func initDependencies() (dependencies, error) {
 	// call new service
 	// remove println later
 	fmt.Println(logger, dbStore)
-	return dependencies{}, nil
+
+	userService := user.NewService(dbStore, logger)
+
+	return dependencies{
+		UserService: userService,
+	}, nil
 }

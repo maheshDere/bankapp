@@ -12,7 +12,7 @@ const (
 		id,name,email,password,role_type)
 		VALUES($1,$2,$3,$4,$5)
 	`
-	deleteUserByIDQuery = `DELETE FROM categories WHERE id = $1`
+	deleteUserByIDQuery = `DELETE FROM users WHERE id = $1`
 )
 
 type user struct {

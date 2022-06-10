@@ -29,3 +29,10 @@ func (cs *userService) deleteByID(ctx context.Context, id string) (err error) {
 
 	return
 }
+
+func NewService(s db.Storer, l *zap.SugaredLogger) Service {
+	return &userService{
+		store:  s,
+		logger: l,
+	}
+}
