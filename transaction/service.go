@@ -44,10 +44,9 @@ func (s *transactionService) debitAmount(ctx context.Context, req debitRequest) 
 	}
 
 	accounts.UserID = userID
-	// amount will be negative for debit
 	t := &db.Transaction{
 		ID:        utils.GetUniqueId(),
-		Amount:    0 - req.Amount,
+		Amount:    req.Amount,
 		AccountID: accounts.ID,
 		Type:      0,
 	}

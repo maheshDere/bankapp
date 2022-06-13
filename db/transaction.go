@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	debitQuery            = `INSERT INTO transactions(id, tnx_type, amount, account_id, created_at) VALUES($1, $2, $3, $4, $5)`
-	balanceQuery          = `SELECT coalesce(SUM(amount), 0.00) FROM transactions WHERE account_id = $1`
+	debitQuery = `INSERT INTO transactions(id, tnx_type, amount, account_id, created_at) VALUES($1, $2, $3, $4, $5)`
+	// 1 is for credit and 0 for debit
+	balanceQuery          = `SELECT coalesce(SUM(CASE tnx_type WHEN 1 THEN amount WHEN 0 THEN -amount), 0.00) FROM transactions WHERE account_id = $1`
 	listTransactionsQuery = `SELECT id,tnx_type,amount,account_id,created_at FROM transactions WHERE account_id = $1`
 )
 
