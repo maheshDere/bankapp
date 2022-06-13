@@ -56,6 +56,6 @@ func (s *store) FindTransactionsById(ctx context.Context, accountId string) (tra
 	if err == sql.ErrNoRows {
 		return transactions, ErrAccountNotExist
 	}
-	fmt.Println("err", err)
+
 	return
 }

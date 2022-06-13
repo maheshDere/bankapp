@@ -4,7 +4,6 @@ import (
 	"bankapp/db"
 	"bankapp/utils"
 	"context"
-	"fmt"
 
 	"go.uber.org/zap"
 )
@@ -29,9 +28,10 @@ func (s *transactionService) debitAmount(ctx context.Context, req debitRequest) 
 	// expecting jwt payload from ctx
 	userID, ok := ctx.Value("userID").(string)
 	if !ok {
+		s.logger.Error("Invalid user Id in jwt payload", "err", invalidUserID.Error())
 		return invalidUserID
 	}
-	fmt.Println("userID", userID)
+
 	accounts, err := s.store.FindByUserID(ctx, userID)
 	if err == db.NoAccountRecordForUserID {
 		s.logger.Error("No account found for the userId", "err", err.Error())
@@ -58,12 +58,13 @@ func (s *transactionService) debitAmount(ctx context.Context, req debitRequest) 
 	}
 	// Checking for balance
 	if (balance - req.Amount) < 0 {
+		s.logger.Error("Insufficient funds for debit", "err", balanceLow.Error())
 		return balanceLow
 	}
 
 	err = s.store.DebitTransaction(ctx, t)
 	if err != nil {
-		s.logger.Error("Error in create debit transaction", "msg", err.Error(), req, *t)
+		s.logger.Error("Error in create debit transaction", "msg", err.Error(), req, t)
 		return
 	}
 
@@ -84,6 +85,7 @@ func (cs *transactionService) findByID(ctx context.Context, accountId string) (r
 	response.Transactions = transaction
 	return
 }
+
 func NewService(store db.Storer, logger *zap.SugaredLogger) Service {
 	return &transactionService{
 		store:  store,
