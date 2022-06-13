@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/sethvargo/go-password/password"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,6 +19,8 @@ const (
 	createAccount = `INSERT INTO account(
 		id,opening_date,user_id,created_at)
 		VALUES($1,$2,$3,$4)`
+
+	deleteUserByIDQuery = `DELETE FROM users WHERE id = $1`
 )
 
 type User struct {
@@ -77,6 +80,20 @@ func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
 				id,
 				now,
 			)
+		}
+		return err
+	})
+}
+
+func (s *store) DeleteUserByID(ctx context.Context, id string) (err error) {
+	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
+		res, err := s.db.Exec(deleteUserByIDQuery, id)
+		cnt, err := res.RowsAffected()
+		if cnt == 0 {
+			return ErrUserNotExist
+		}
+		if err != nil {
+			return err
 		}
 		return err
 	})

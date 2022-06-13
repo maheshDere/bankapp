@@ -11,6 +11,7 @@ import (
 type Service interface {
 	update(ctx context.Context, req updateRequest, userId string) (err error)
 	create(ctx context.Context, req createRequest) (err error)
+	deleteByID(ctx context.Context, id string) (err error)
 }
 
 type userService struct {
@@ -49,6 +50,20 @@ func (us *userService) create(ctx context.Context, req createRequest) (err error
 
 	fmt.Println(err)
 	//add error handling
+
+	return
+}
+
+func (cs *userService) deleteByID(ctx context.Context, id string) (err error) {
+	err = cs.store.DeleteUserByID(ctx, id)
+	if err == db.ErrUserNotExist {
+		cs.logger.Error("User Not present", "err", err.Error(), "user_id", id)
+		return errNoUserId
+	}
+	if err != nil {
+		cs.logger.Error("Error deleting user", "err", err.Error(), "user_id", id)
+		return
+	}
 
 	return
 }

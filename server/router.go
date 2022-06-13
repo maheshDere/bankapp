@@ -29,7 +29,7 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	transactionRoutes.HandleFunc("/{account_id}", transaction.FindByID(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
 	router.HandleFunc("/ping", pingHandler).Methods(http.MethodGet)
 	router.HandleFunc("/createuser", users.Create(dep.UserServices)).Methods(http.MethodPost).Headers(versionHeader, v1)
-
+	router.HandleFunc("/user/{user_id}", users.DeleteByID(dep.UserServices)).Methods(http.MethodDelete).Headers(versionHeader, v1)
 	router.HandleFunc("/users/{userId}", users.Update(dep.UserServices)).Methods(http.MethodPut)
 	return
 }

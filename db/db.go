@@ -26,6 +26,7 @@ type Storer interface {
 	FindTransactionsById(ctx context.Context, accountId string) (transactions []Transaction, err error)
 	CreateUser(ctx context.Context, user *User) (err error)
 	UpdateUser(ctx context.Context, category *Users) (err error)
+	DeleteUserByID(ctx context.Context, id string) (err error)
 }
 
 type store struct {
@@ -76,7 +77,7 @@ func WithDefaultTimeout(ctx context.Context, op func(ctx context.Context) error)
 	return WithTimeout(ctx, defaultTimeout, op)
 }
 
-func NewStorer(d *sqlx.DB) Storer {
+func NewStorer(d *sqlx.DB) *store {
 	return &store{
 		db: d,
 	}
