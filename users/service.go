@@ -3,13 +3,16 @@ package users
 import (
 	"bankapp/db"
 	"context"
+	"fmt"
 
 	"go.uber.org/zap"
 )
 
 type Service interface {
 	update(ctx context.Context, req updateRequest, userId string) (err error)
+	create(ctx context.Context, req createRequest) (err error)
 }
+
 type userService struct {
 	store  db.Storer
 	logger *zap.SugaredLogger
@@ -34,6 +37,22 @@ func (cs *userService) update(ctx context.Context, c updateRequest, userID strin
 
 	return
 }
+
+func (us *userService) create(ctx context.Context, req createRequest) (err error) {
+	fmt.Println("Inside create user service")
+
+	err = us.store.CreateUser(ctx, &db.User{
+		Name:     req.Name,
+		Email:    req.Email,
+		RoleType: req.RoleType,
+	})
+
+	fmt.Println(err)
+	//add error handling
+
+	return
+}
+
 func NewService(s db.Storer, l *zap.SugaredLogger) Service {
 	return &userService{
 		store:  s,

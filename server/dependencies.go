@@ -4,15 +4,13 @@ import (
 	"bankapp/app"
 	"bankapp/db"
 	"bankapp/transaction"
-	"bankapp/user"
 	"bankapp/users"
 	"fmt"
 )
 
 type dependencies struct {
 	TransactionService transaction.Service
-	UserServices       user.Service
-	UserService        users.Service
+	UserServices       users.Service
 }
 
 func initDependencies() (dependencies, error) {
