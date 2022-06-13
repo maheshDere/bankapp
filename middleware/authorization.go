@@ -37,7 +37,7 @@ func AuthorizationMiddleware(next http.Handler) http.Handler {
 		if isAccountant || isCustomer {
 			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "claims", claims)))
 		} else {
-			api.Error(w, http.StatusUnauthorized, api.Response{Message: "Access Denied"})
+			api.Error(w, http.StatusForbidden, api.Response{Message: "Access Denied"})
 		}
 		return
 	})
@@ -57,6 +57,10 @@ func readToken(r *http.Request) (token string, err error) {
 
 //validateToken will validate the given token, and it will return the claims or error
 func validateToken(jwtToken string) (login.Claims, error) {
+	if jwtToken == "" {
+		err := errors.New("Authorization token is missing")
+		return login.Claims{}, err
+	}
 	// Parse the token
 	token, err := jwt.ParseWithClaims(jwtToken, &login.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(config.InitJWTConfiguration().JwtSignature), nil
