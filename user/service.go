@@ -10,7 +10,7 @@ import (
 
 type Service interface {
 	update(ctx context.Context, req updateRequest, userId string) (err error)
-	create(ctx context.Context, req createRequest) (err error)
+	create(ctx context.Context, req createRequest) (resp db.CreateUserResponse, err error)
 	deleteByID(ctx context.Context, id string) (err error)
 }
 
@@ -39,19 +39,20 @@ func (cs *userService) update(ctx context.Context, c updateRequest, userID strin
 	return
 }
 
-func (us *userService) create(ctx context.Context, req createRequest) (err error) {
+func (us *userService) create(ctx context.Context, req createRequest) (resp db.CreateUserResponse, err error) {
 	fmt.Println("Inside create user service")
 
-	err = us.store.CreateUser(ctx, &db.User{
+	resp, err = us.store.CreateUser(ctx, &db.User{
 		Name:     req.Name,
 		Email:    req.Email,
 		RoleType: req.RoleType,
 	})
 
-	fmt.Println(err)
-	//add error handling
+	if err != nil {
+		us.logger.Error("Error while creating user", "err", err.Error())
+	}
 
-	return
+	return resp, err
 }
 
 func (cs *userService) deleteByID(ctx context.Context, id string) (err error) {

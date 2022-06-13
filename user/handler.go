@@ -49,14 +49,25 @@ func Create(service Service) http.HandlerFunc {
 
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		var cr createRequest
-		_ = json.NewDecoder(req.Body).Decode(&cr)
+		err := json.NewDecoder(req.Body).Decode(&cr)
 		//add error handling code here
+		if err != nil {
+			api.Error(rw, http.StatusBadRequest, api.Response{
+				Message: "Invalid input data",
+			})
+			return
+		}
 
 		fmt.Println("In create cr is --> ", cr)
-		_ = service.create(req.Context(), cr)
-
+		resp, err := service.create(req.Context(), cr)
 		//add error handling code and check is req good or not
-		api.Success(rw, http.StatusCreated, api.Response{Message: "User created sucessfully"})
+		if err != nil {
+			api.Error(rw, http.StatusInternalServerError, api.Response{
+				Message: "Error while creating user",
+			})
+			return
+		}
+		api.Success(rw, http.StatusCreated, resp)
 	})
 }
 

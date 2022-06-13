@@ -34,6 +34,11 @@ type User struct {
 	RoleType string `db:"role_type"`
 }
 
+type CreateUserResponse struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
@@ -71,18 +76,25 @@ func (s *store) FindUserByEmail(ctx context.Context, email string) (user User, e
 	return
 }
 
-func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
+func (s *store) CreateUser(ctx context.Context, user *User) (resp CreateUserResponse, err error) {
 	now := time.Now()
 	id, err := generateId()
-	fmt.Println(id)
-	accountId, _ := generateId()
-
+	if err != nil {
+		return
+	}
+	accountId, err := generateId()
+	if err != nil {
+		return
+	}
 	password, err := generatePassword()
-	password, err = HashPassword(password)
-	fmt.Println("Inside the CreateUser db  user---->", password)
-	//add error handling here
+	if err != nil {
+		return
+	}
+	response := CreateUserResponse{Email: user.Email, Password: password}
 
-	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
+	password, err = HashPassword(password)
+
+	return response, Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		_, err = s.db.Exec(
 			createUserQuery,
 			id,
