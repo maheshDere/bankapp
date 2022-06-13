@@ -13,6 +13,12 @@ type config struct {
 	appPort       int
 	migrationPath string
 	db            databaseConfig
+	jwtConfig     JwtConfig
+}
+
+type JwtConfig struct {
+	JwtSignature string
+	TokenExpiry  int
 }
 
 var appConfig config
@@ -29,12 +35,15 @@ func Load() {
 	viper.AddConfigPath("./../..")
 	viper.ReadInConfig()
 	viper.AutomaticEnv()
-
 	appConfig = config{
 		appName:       readEnvString("APP_NAME"),
 		appPort:       readEnvInt("APP_PORT"),
 		migrationPath: readEnvString("MIGRATION_PATH"),
 		db:            newDatabaseConfig(),
+		jwtConfig: JwtConfig{
+			JwtSignature: readEnvString("MY_SIGNATURE"),
+			TokenExpiry:  readEnvInt("TOKEN_EXPIRY"),
+		},
 	}
 }
 
@@ -68,5 +77,12 @@ func checkIfSet(key string) {
 	if !viper.IsSet(key) {
 		err := errors.New(fmt.Sprintf("Key %s is not set", key))
 		panic(err)
+	}
+}
+
+func InitJWTConfiguration() JwtConfig {
+	return JwtConfig{
+		JwtSignature: appConfig.jwtConfig.JwtSignature,
+		TokenExpiry:  appConfig.jwtConfig.TokenExpiry,
 	}
 }

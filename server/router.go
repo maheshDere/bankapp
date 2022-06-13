@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"bankapp/config"
+	"bankapp/login"
 	"bankapp/middleware"
 	"bankapp/transaction"
 	"bankapp/user"
@@ -31,6 +32,20 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	router.HandleFunc("/createuser", user.Create(dep.UserServices)).Methods(http.MethodPost).Headers(versionHeader, v1)
 	router.HandleFunc("/user/{user_id}", user.DeleteByID(dep.UserServices)).Methods(http.MethodDelete).Headers(versionHeader, v1)
 	router.HandleFunc("/users/{userId}", user.Update(dep.UserServices)).Methods(http.MethodPut)
+	//Login
+	router.HandleFunc("/login", login.Login(dep.UserLoginService)).Methods(http.MethodPost).Headers(versionHeader, v1)
+
+	//User
+	router.HandleFunc("/createuser", middleware.AuthorizationMiddleware(user.Create(dep.UserServices), "createUser")).Methods(http.MethodPost).Headers(versionHeader, v1)
+
+	//Transaction
+	transactionRoutes := router.PathPrefix("/transaction").Subrouter()
+	transactionRoutes.Use(middleware.TransactionMiddleware)
+	transactionRoutes.HandleFunc("/debit", middleware.AuthorizationMiddleware(transaction.DebitAmount(dep.TransactionService), "debit")).Methods(http.MethodPost).Headers(versionHeader, v1)
+	transactionRoutes.HandleFunc("/{account_id}", transaction.FindByID(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
+
+	sh := http.StripPrefix("/docs/", http.FileServer(http.Dir("./swaggerui/")))
+	router.PathPrefix("/docs/").Handler(sh)
 	return
 }
 
