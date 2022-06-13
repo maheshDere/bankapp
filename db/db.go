@@ -17,8 +17,22 @@ const (
 )
 
 type Storer interface {
+	// Account
+	FindByUserID(ctx context.Context, userID string) (acc Account, err error)
+	FindUserByEmail(ctx context.Context, email string) (user User, err error)
+	// Transaction
+	DebitTransaction(ctx context.Context, t *Transaction) (err error)
+	GetTotalBalance(ctx context.Context, accountId string) (balance float64, err error)
+	FindTransactionsById(ctx context.Context, accountId string) (transactions []Transaction, err error)
+	CreateUser(ctx context.Context, user *User) (err error)
+	UpdateUser(ctx context.Context, category *User) (err error)
+	DeleteUserByID(ctx context.Context, id string) (err error)
 }
 
+type LoginStorer interface {
+	// Users
+	FindUserByEmail(ctx context.Context, email string) (user User, err error)
+}
 type store struct {
 	db *sqlx.DB
 }
@@ -67,7 +81,13 @@ func WithDefaultTimeout(ctx context.Context, op func(ctx context.Context) error)
 	return WithTimeout(ctx, defaultTimeout, op)
 }
 
-func NewStorer(d *sqlx.DB) Storer {
+func NewStorer(d *sqlx.DB) *store {
+	return &store{
+		db: d,
+	}
+}
+
+func NewLoginStorer(d *sqlx.DB) LoginStorer {
 	return &store{
 		db: d,
 	}
