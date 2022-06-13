@@ -4,10 +4,12 @@ import (
 	"bankapp/config"
 	"bankapp/db"
 	"context"
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var secretKey = []byte(config.InitJWTConfiguration().JwtSignature)
@@ -22,38 +24,40 @@ type loginService struct {
 }
 
 type Claims struct {
-	Email        string `json:"email"`
-	IsAccountant bool   `json:"isAccountant"`
+	Email    string `json:"email"`
+	RoleType string `json:"roleType"`
 	jwt.StandardClaims
 }
 
 func (ls *loginService) login(ctx context.Context, ul loginRequest) (tokenString string, err error) {
 	user, err := ls.store.FindUserByEmail(ctx, ul.Email)
 	// TODO: Handle the err
-
-	//authenticate the user
-	err = authenticateUser(user)
+	if user.Email == "" {
+		err = errors.New("Invalid Email or Password")
+		return
+	}
+	// Authenticate the user
+	matched := authenticateUser(user, ul.Password)
 	// TODO: Handle wrong password
-
+	if !matched {
+		err = errors.New("Invalid Email or Password")
+		return
+	}
 	// Generate the
 	tokenString, err = generateJWT(user.Email, user.RoleType)
 	return
 }
 
-func authenticateUser(user db.User) (err error) {
-	// TODO: check if the password is correct
-	return
+func authenticateUser(user db.User, pwd string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(pwd))
+	return err == nil
 }
 
 func generateJWT(email, roleType string) (tokenString string, err error) {
 	expirationTime := time.Now().Add(time.Minute * time.Duration(config.InitJWTConfiguration().TokenExpiry)).Unix()
-	isAccountant := false
-	if roleType == "accountant" {
-		isAccountant = true
-	}
 	claims := &Claims{
-		Email:        email,
-		IsAccountant: isAccountant,
+		Email:    email,
+		RoleType: roleType,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime,
 		},
