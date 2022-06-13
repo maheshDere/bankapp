@@ -3,13 +3,12 @@ package user
 import (
 	"bankapp/db"
 	"context"
-	"fmt"
 
 	"go.uber.org/zap"
 )
 
 type Service interface {
-	create(ctx context.Context, req createRequest) (err error)
+	create(ctx context.Context, req createRequest) (resp db.CreateAccountResponse, err error)
 }
 
 type userService struct {
@@ -17,19 +16,20 @@ type userService struct {
 	logger *zap.SugaredLogger
 }
 
-func (us *userService) create(ctx context.Context, req createRequest) (err error) {
-	fmt.Println("Inside create user service")
+func (us *userService) create(ctx context.Context, req createRequest) (resp db.CreateAccountResponse, err error) {
 
-	err = us.store.CreateUser(ctx, &db.User{
+	resp, err = us.store.CreateUser(ctx, &db.User{
 		Name:     req.Name,
 		Email:    req.Email,
 		RoleType: req.RoleType,
 	})
 
-	fmt.Println(err)
-	//add error handling
+	if err != nil {
+		us.logger.Error("Error while creating customer", "err", err.Error())
+		return
+	}
 
-	return
+	return resp, err
 }
 
 func NewService(s db.Storer, l *zap.SugaredLogger) Service {

@@ -43,18 +43,16 @@ func generateId() (string, error) {
 	return password.Generate(10, 10, 0, false, false)
 }
 
-func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
+func (s *store) CreateUser(ctx context.Context, user *User) (resp CreateAccountResponse, err error) {
 	now := time.Now()
-	id, err := generateId()
+	id, _ := generateId()
 	fmt.Println(id)
 	accountId, _ := generateId()
+	password, _ := generatePassword()
+	response := CreateAccountResponse{Email: user.Email, Password: password}
+	password, _ = HashPassword(password)
 
-	password, err := generatePassword()
-	password, err = HashPassword(password)
-	fmt.Println("Inside the CreateUser db  user---->", password)
-	//add error handling here
-
-	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
+	return response, Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		_, err = s.db.Exec(
 			createUserQuery,
 			id,

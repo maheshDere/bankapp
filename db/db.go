@@ -11,13 +11,18 @@ import (
 
 type ctxKey int
 
+type CreateAccountResponse struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 const (
 	dbKey          ctxKey = 0
 	defaultTimeout        = 1 * time.Second
 )
 
 type Storer interface {
-	CreateUser(ctx context.Context, user *User) (err error)
+	CreateUser(ctx context.Context, user *User) (resp CreateAccountResponse, err error)
 }
 
 type store struct {
