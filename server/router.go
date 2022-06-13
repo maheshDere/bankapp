@@ -7,7 +7,7 @@ import (
 	"bankapp/config"
 	"bankapp/middleware"
 	"bankapp/transaction"
-	"bankapp/users"
+	"bankapp/user"
 
 	"github.com/gorilla/mux"
 )
@@ -28,9 +28,9 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	transactionRoutes.HandleFunc("/debit", transaction.DebitAmount(dep.TransactionService)).Methods(http.MethodPost).Headers(versionHeader, v1)
 	transactionRoutes.HandleFunc("/{account_id}", transaction.FindByID(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
 	router.HandleFunc("/ping", pingHandler).Methods(http.MethodGet)
-	router.HandleFunc("/createuser", users.Create(dep.UserServices)).Methods(http.MethodPost).Headers(versionHeader, v1)
-	router.HandleFunc("/user/{user_id}", users.DeleteByID(dep.UserServices)).Methods(http.MethodDelete).Headers(versionHeader, v1)
-	router.HandleFunc("/users/{userId}", users.Update(dep.UserServices)).Methods(http.MethodPut)
+	router.HandleFunc("/createuser", user.Create(dep.UserServices)).Methods(http.MethodPost).Headers(versionHeader, v1)
+	router.HandleFunc("/user/{user_id}", user.DeleteByID(dep.UserServices)).Methods(http.MethodDelete).Headers(versionHeader, v1)
+	router.HandleFunc("/users/{userId}", user.Update(dep.UserServices)).Methods(http.MethodPut)
 	return
 }
 

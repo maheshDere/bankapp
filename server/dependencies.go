@@ -4,13 +4,13 @@ import (
 	"bankapp/app"
 	"bankapp/db"
 	"bankapp/transaction"
-	"bankapp/users"
+	"bankapp/user"
 	"fmt"
 )
 
 type dependencies struct {
 	TransactionService transaction.Service
-	UserServices       users.Service
+	UserServices       user.Service
 }
 
 func initDependencies() (dependencies, error) {
@@ -21,7 +21,7 @@ func initDependencies() (dependencies, error) {
 	transactionService := transaction.NewService(dbStore, logger)
 
 	// call new service
-	userService := users.NewService(dbStore, logger)
+	userService := user.NewService(dbStore, logger)
 	// remove println later
 
 	fmt.Println(logger, dbStore)
