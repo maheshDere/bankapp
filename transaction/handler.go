@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"bankapp/api"
+	"bankapp/login"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -42,7 +43,11 @@ func FindByID(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		fmt.Println("Inside the FindByID handler")
 		vars := mux.Vars(req)
-
+		claims, ok := req.Context().Value("claims").(login.Claims)
+		if !ok {
+			fmt.Println(ok)
+		}
+		fmt.Println(claims.Email)
 		resp, err := service.findByID(req.Context(), vars["account_id"])
 
 		if err == errNoAccountId {

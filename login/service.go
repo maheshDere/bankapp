@@ -5,6 +5,7 @@ import (
 	"bankapp/db"
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -33,9 +34,11 @@ func (ls *loginService) login(ctx context.Context, ul loginRequest) (tokenString
 	user, err := ls.store.FindUserByEmail(ctx, ul.Email)
 	// TODO: Handle the err
 	if user.Email == "" {
+		fmt.Println(user, ul.Email, err)
 		err = errors.New("Invalid Email or Password")
 		return
 	}
+	fmt.Println(user.Password, ul.Password)
 	// Authenticate the user
 	matched := authenticateUser(user, ul.Password)
 	// TODO: Handle wrong password

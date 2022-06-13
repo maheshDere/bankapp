@@ -2,7 +2,9 @@ package middleware
 
 import (
 	"bankapp/config"
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -14,40 +16,21 @@ var (
 	customerRoutes   = []string{"credit", "debit"}
 )
 
-func AuthorizationMiddleware(next http.HandlerFunc, routName string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var accountantRouteFound string
-		var customerRouteFound string
-
+func AuthorizationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("We are here")
 		token, err := readToken(r)
 		claims, err := validateToken(token)
 		if err != nil {
+			fmt.Println(err)
 			w.WriteHeader(http.StatusUnauthorized)
 		}
-		if claims.RoleType == "accountant" {
-			for _, accountantRouteFound = range accountantRoutes {
-				if routName == accountantRouteFound {
-					break
-				}
-			}
-		}
-		if claims.RoleType == "customer" {
-			for _, customerRouteFound = range customerRoutes {
-				if routName == customerRouteFound {
-					break
-				}
-			}
-		}
-
-		switch {
-		case accountantRouteFound != "":
-			next.ServeHTTP(w, r)
-		case customerRouteFound != "":
-			next.ServeHTTP(w, r)
-		}
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+		fmt.Println("claims", claims)
+		ctx := context.WithValue(r.Context(), "claims", claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
+		fmt.Println("Came here")
+		next.ServeHTTP(w, r)
+	})
 }
 
 //readToken method will read the Authorization header and will return the token string or error

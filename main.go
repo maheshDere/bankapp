@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"bankapp/app"
@@ -9,9 +10,12 @@ import (
 	"bankapp/server"
 
 	"github.com/urfave/cli"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
+	bytes, err := bcrypt.GenerateFromPassword([]byte("Josh@123"), 14)
+	fmt.Println(string(bytes), err)
 	config.Load()
 	app.Init()
 	defer app.Close()

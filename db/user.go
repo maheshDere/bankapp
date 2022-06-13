@@ -16,7 +16,7 @@ const (
 		id,name,email,password,role_type,created_at,updated_at)
 		VALUES($1,$2,$3,$4,$5,$6,$7)
 	`
-	findUserByEmailQuery = `SELECT * FROM users WHERE email = $1`
+	findUserByEmailQuery = `SELECT id, name, email, password FROM users WHERE email = $1`
 
 	createAccount = `INSERT INTO account(
 		id,opening_date,user_id,created_at)
