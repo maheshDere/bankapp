@@ -16,7 +16,7 @@ const (
 		id,name,email,password,role_type,created_at,updated_at)
 		VALUES($1,$2,$3,$4,$5,$6,$7)
 	`
-	findUserByEmailQuery = `SELECT * FROM users WHERE email = $1`
+	findUserByEmailQuery = `SELECT id, name, email, password, role_type FROM users WHERE email = $1`
 
 	createAccount = `INSERT INTO account(
 		id,opening_date,user_id,created_at)
@@ -63,11 +63,9 @@ func (s *store) UpdateUser(ctx context.Context, user *User) (err error) {
 }
 
 func (s *store) FindUserByEmail(ctx context.Context, email string) (user User, err error) {
-	fmt.Println("Inside FindUserByEmail method db")
 	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
 		return s.db.GetContext(ctx, &user, findUserByEmailQuery, email)
 	})
-	// TODO: handle error
 	return
 }
 
