@@ -19,7 +19,7 @@ type Service interface {
 }
 
 type loginService struct {
-	store  db.LoginStorer
+	store  db.Storer
 	logger *zap.SugaredLogger
 }
 
@@ -70,7 +70,7 @@ func generateJWT(email, roleType string) (tokenString string, err error) {
 	return
 }
 
-func NewService(s db.LoginStorer, l *zap.SugaredLogger) Service {
+func NewService(s db.Storer, l *zap.SugaredLogger) Service {
 	return &loginService{
 		store:  s,
 		logger: l,

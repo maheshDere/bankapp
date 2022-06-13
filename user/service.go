@@ -26,7 +26,7 @@ func (cs *userService) update(ctx context.Context, c updateRequest, userID strin
 		return
 	}
 
-	err = cs.store.UpdateUser(ctx, &db.Users{
+	err = cs.store.UpdateUser(ctx, &db.User{
 		Password: c.Password, //pass encrypt
 		Name:     c.Name,
 		ID:       userID,

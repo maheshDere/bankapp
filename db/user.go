@@ -23,10 +23,11 @@ const (
 		VALUES($1,$2,$3,$4)`
 
 	deleteUserByIDQuery = `DELETE FROM users WHERE id = $1`
+	updateUserQuery     = "UPDATE users SET name=$1 ,password=$2,updated_at=$3 where id=$4"
 )
 
 type User struct {
-	Id       string `db:"id"`
+	ID       string `db:"id"`
 	Name     string `db:"name"`
 	Email    string `db:"email"`
 	Password string `db:"password"`
@@ -47,8 +48,21 @@ func generatePassword() (string, error) {
 func generateId() (string, error) {
 	return password.Generate(10, 10, 0, false, false)
 }
+func (s *store) UpdateUser(ctx context.Context, user *User) (err error) {
+	now := time.Now()
+	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
+		_, err = s.db.Exec(
+			updateUserQuery,
+			user.Name,
+			user.Password,
+			now,
+			user.ID,
+		)
+		return err
+	})
+}
 
-func (s *store) FindUserByEmail(ctx context.Context, email string) (user Users, err error) {
+func (s *store) FindUserByEmail(ctx context.Context, email string) (user User, err error) {
 	fmt.Println("Inside FindUserByEmail method db")
 	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
 		return s.db.GetContext(ctx, &user, findUserByEmailQuery, email)

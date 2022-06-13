@@ -37,15 +37,6 @@ func initRouter(dep dependencies) (router *mux.Router) {
 
 	//User
 	router.HandleFunc("/createuser", middleware.AuthorizationMiddleware(user.Create(dep.UserServices), "createUser")).Methods(http.MethodPost).Headers(versionHeader, v1)
-
-	//Transaction
-	transactionRoutes := router.PathPrefix("/transaction").Subrouter()
-	transactionRoutes.Use(middleware.TransactionMiddleware)
-	transactionRoutes.HandleFunc("/debit", middleware.AuthorizationMiddleware(transaction.DebitAmount(dep.TransactionService), "debit")).Methods(http.MethodPost).Headers(versionHeader, v1)
-	transactionRoutes.HandleFunc("/{account_id}", transaction.FindByID(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
-
-	sh := http.StripPrefix("/docs/", http.FileServer(http.Dir("./swaggerui/")))
-	router.PathPrefix("/docs/").Handler(sh)
 	return
 }
 

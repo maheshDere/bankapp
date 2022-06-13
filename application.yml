@@ -13,4 +13,5 @@ DB_MAX_LIFE_TIME_MINS: 30
 MIGRATION_PATH: "./migrations"
 
 #JWT Signature
-MY_SIGNATURE: "my_secret_key"
+JWT_SECRECT_KEY: "my_secret_key"
+TOKEN_EXPIRY: 30
