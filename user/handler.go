@@ -4,7 +4,6 @@ import (
 	"bankapp/api"
 	"bankapp/db"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -43,32 +42,6 @@ func Update(service Service) http.HandlerFunc {
 }
 func isBadRequest(err error) bool {
 	return err == errEmptyName || err == errEmptyPassword
-}
-
-func Create(service Service) http.HandlerFunc {
-
-	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		var cr createRequest
-		err := json.NewDecoder(req.Body).Decode(&cr)
-		//add error handling code here
-		if err != nil {
-			api.Error(rw, http.StatusBadRequest, api.Response{
-				Message: "Invalid input data",
-			})
-			return
-		}
-
-		fmt.Println("In create cr is --> ", cr)
-		resp, err := service.create(req.Context(), cr)
-		//add error handling code and check is req good or not
-		if err != nil {
-			api.Error(rw, http.StatusInternalServerError, api.Response{
-				Message: "Error while creating user",
-			})
-			return
-		}
-		api.Success(rw, http.StatusCreated, resp)
-	})
 }
 
 func DeleteByID(service Service) http.HandlerFunc {
