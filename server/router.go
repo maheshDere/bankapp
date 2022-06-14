@@ -24,15 +24,15 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	fmt.Println(v1)
 	router = mux.NewRouter()
 	//JWT Authorization middleware
-	router.Use(middleware.AuthorizationMiddleware)
+
 	//Login
 	router.HandleFunc("/login", login.Login(dep.UserLoginService)).Methods(http.MethodPost).Headers(versionHeader, v1)
 	//Transaction routes
-	router.HandleFunc("/transaction/debit", transaction.DebitAmount(dep.TransactionService)).Methods(http.MethodPost).Headers(versionHeader, v1)
-	router.HandleFunc("/transaction/{account_id}", transaction.FindByID(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
+	router.HandleFunc("/transaction/debit", middleware.AuthorizationMiddleware(transaction.DebitAmount(dep.TransactionService), "customer")).Methods(http.MethodPost).Headers(versionHeader, v1)
+	router.HandleFunc("/transaction/{account_id}", middleware.AuthorizationMiddleware(transaction.FindByID(dep.TransactionService), "customer")).Methods(http.MethodGet).Headers(versionHeader, v1)
 	//User routes
-	router.HandleFunc("/user", user.Create(dep.UserServices)).Methods(http.MethodPost).Headers(versionHeader, v1)
-	router.HandleFunc("/user/{user_id}", user.DeleteByID(dep.UserServices)).Methods(http.MethodDelete).Headers(versionHeader, v1)
-	router.HandleFunc("/user/{userId}", user.Update(dep.UserServices)).Methods(http.MethodPut)
+	router.HandleFunc("/user", middleware.AuthorizationMiddleware(user.Create(dep.UserServices), "accountant")).Methods(http.MethodPost).Headers(versionHeader, v1)
+	router.HandleFunc("/user/{user_id}", middleware.AuthorizationMiddleware(user.DeleteByID(dep.UserServices), "accountant")).Methods(http.MethodDelete).Headers(versionHeader, v1)
+	router.HandleFunc("/user/{userId}", middleware.AuthorizationMiddleware(user.Update(dep.UserServices), "accountant")).Methods(http.MethodPut)
 	return
 }

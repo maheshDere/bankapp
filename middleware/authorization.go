@@ -12,35 +12,22 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func AuthorizationMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		routName := r.URL.RequestURI()
-		if routName == "/login" {
-			next.ServeHTTP(w, r)
-			return
-		}
-		var isAccountant bool
-		var isCustomer bool
-
+func AuthorizationMiddleware(handler http.Handler, roleType string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		//routeName := r.URL.RequestURI()
 		token, err := readToken(r)
 		claims, err := validateToken(token)
 		if err != nil {
 			api.Error(w, http.StatusUnauthorized, api.Response{Message: err.Error()})
 			return
 		}
-		if claims.RoleType == "accountant" && strings.Contains(routName, "user") {
-			isAccountant = true
-		}
-		if claims.RoleType == "customer" && strings.Contains(routName, "transaction") {
-			isCustomer = true
-		}
-		if isAccountant || isCustomer {
-			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "claims", claims)))
+		if claims.RoleType == roleType {
+			handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "claims", claims)))
 		} else {
 			api.Error(w, http.StatusForbidden, api.Response{Message: "Access Denied"})
 		}
 		return
-	})
+	}
 }
 
 //readToken method will read the Authorization header and will return the token string or error
@@ -73,10 +60,3 @@ func validateToken(jwtToken string) (login.Claims, error) {
 	claims := token.Claims.(*login.Claims)
 	return *claims, err
 }
-
-/* type Claims struct {
-	Email    string `json:"email"`
-	RoleType string `json:"roleType"`
-	jwt.StandardClaims
-}
-*/

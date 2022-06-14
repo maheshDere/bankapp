@@ -26,7 +26,10 @@ func initDependencies() (dependencies, error) {
 	userService := user.NewService(dbStore, logger)
 
 	loginService := login.NewService(dbStore, logger)
-
+	err := db.CreateAccountant(dbStore)
+	if err != nil {
+		return dependencies{}, err
+	}
 	// remove println later
 
 	fmt.Println(logger, dbStore)

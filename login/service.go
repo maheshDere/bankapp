@@ -31,7 +31,7 @@ func (ls *loginService) login(ctx context.Context, ul loginRequest) (tokenString
 	user, err := ls.store.FindUserByEmail(ctx, ul.Email)
 	// TODO: Handle the err
 	if err == db.ErrUserNotExist {
-		ls.logger.Error("User Not present", "err", err.Error(), "email ", ul.Email)
+		ls.logger.Warn("User Not present", "warn", err.Error(), "email ", ul.Email)
 		return
 	}
 	if user.Email == "" {
@@ -44,6 +44,7 @@ func (ls *loginService) login(ctx context.Context, ul loginRequest) (tokenString
 		err = errors.New("Invalid Email or Password")
 		return
 	}
+	ls.logger.Info("User is valid, generating the token")
 	// Generate the Token
 	tokenString, err = generateJWT(user.Email, user.RoleType)
 	return
