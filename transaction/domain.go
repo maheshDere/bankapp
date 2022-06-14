@@ -15,7 +15,7 @@ func (d debitCreditRequest) Validate() error {
 
 type createTransactionResponse struct {
 	Message      string  `json:"message"`
-	TotalBalance float64 `json:"totalBalance"`
+	TotalBalance float64 `json:"balance"`
 }
 
 type FindByTransactionIdResponse struct {
