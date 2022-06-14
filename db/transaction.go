@@ -11,15 +11,15 @@ const (
 	debitQuery = `INSERT INTO transactions(id, tnx_type, amount, account_id, created_at) VALUES($1, $2, $3, $4, $5)`
 	// 1 is for credit and 0 for debit
 	balanceQuery          = `SELECT coalesce(SUM(CASE tnx_type WHEN 1 THEN amount WHEN 0 THEN -amount), 0.00) FROM transactions WHERE account_id = $1`
-	listTransactionsQuery = `SELECT id,tnx_type,amount,account_id,created_at FROM transactions WHERE account_id = $1`
+	listTransactionsQuery = `SELECT id,tnx_type,amount,account_id,created_at FROM transactions WHERE account_id = $1 AND created_at::date BETWEEN $2 AND $3`
 )
 
 type Transaction struct {
-	ID        string    `db:"id"`
-	Type      int       `db:"tnx_type"`
-	Amount    float64   `db:"amount"`
-	AccountID string    `db:"account_id"`
-	CreatedAt time.Time `db:"created_at"`
+	ID        string    `db:"id" json:"id"`
+	Type      int       `db:"tnx_type" json:"tnx_type"`
+	Amount    float64   `db:"amount" json:"amount"`
+	AccountID string    `db:"account_id" json:"account_id"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
 func (s *store) DebitTransaction(ctx context.Context, t *Transaction) (err error) {
@@ -48,10 +48,10 @@ func (s *store) GetTotalBalance(ctx context.Context, accountId string) (balance 
 	return
 }
 
-func (s *store) FindTransactionsById(ctx context.Context, accountId string) (transactions []Transaction, err error) {
+func (s *store) ListTransaction(ctx context.Context, accountId string, fromDate, toDate time.Time) (transactions []Transaction, err error) {
 	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
 		fmt.Println(accountId)
-		return s.db.SelectContext(ctx, &transactions, listTransactionsQuery, accountId)
+		return s.db.SelectContext(ctx, &transactions, listTransactionsQuery, accountId, fromDate, toDate)
 	})
 	if err == sql.ErrNoRows {
 		return transactions, ErrAccountNotExist

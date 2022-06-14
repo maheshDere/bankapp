@@ -11,15 +11,15 @@ import (
 
 type Service interface {
 	debitAmount(ctx context.Context, req debitRequest) (err error)
-	findByID(ctx context.Context, accId string) (response FindByTransactionIdResponse, err error)
+	list(ctx context.Context, accId string, d listRequest) (response Response, err error)
 }
 
-type transactionService struct {
+type service struct {
 	store  db.Storer
 	logger *zap.SugaredLogger
 }
 
-func (s *transactionService) debitAmount(ctx context.Context, req debitRequest) (err error) {
+func (s *service) debitAmount(ctx context.Context, req debitRequest) (err error) {
 	err = req.Validate()
 	if err != nil {
 		s.logger.Error("Invalid amount for debit transaction", "err", err.Error())
@@ -70,22 +70,37 @@ func (s *transactionService) debitAmount(ctx context.Context, req debitRequest) 
 	return
 }
 
-func (cs *transactionService) findByID(ctx context.Context, accountId string) (response FindByTransactionIdResponse, err error) {
-	transaction, err := cs.store.FindTransactionsById(ctx, accountId)
+func (cs *service) list(ctx context.Context, accountId string, req listRequest) (response Response, err error) {
+	response.Transactions = make([]db.Transaction, 0)
+	fromDate, err := utils.ParseStringToTime(req.FromDate)
+	if err != nil {
+		cs.logger.Error("Error while parsing", "err", err.Error())
+		return
+	}
+	toDate, err := utils.ParseStringToTime(req.ToDate)
+	if err != nil {
+		cs.logger.Error("Error while parsing", "err", err.Error())
+		return
+	}
+	fmt.Println(fromDate, toDate)
+	// to :=
+	transaction, err := cs.store.ListTransaction(ctx, accountId, fromDate, toDate)
 	if err == db.ErrAccountNotExist {
-		cs.logger.Error("No Account present", "err", err.Error())
+		cs.logger.Warn("No Account present", "err", err.Error())
 		return response, errNoAccountId
 	}
 	if err != nil {
 		cs.logger.Error("Error finding Account", "err", err.Error(), "account_id", accountId)
 		return
 	}
-
-	response.Transactions = transaction
+	if transaction != nil {
+		response.Transactions = transaction
+	}
 	return
 }
+
 func NewService(store db.Storer, logger *zap.SugaredLogger) Service {
-	return &transactionService{
+	return &service{
 		store:  store,
 		logger: logger,
 	}

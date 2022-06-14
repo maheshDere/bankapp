@@ -27,7 +27,7 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	transactionRoutes := router.PathPrefix("/transaction").Subrouter()
 	transactionRoutes.Use(middleware.TransactionMiddleware)
 	transactionRoutes.HandleFunc("/debit", transaction.DebitAmount(dep.TransactionService)).Methods(http.MethodPost).Headers(versionHeader, v1)
-	transactionRoutes.HandleFunc("/{account_id}", transaction.FindByID(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
+	transactionRoutes.HandleFunc("/{account_id}", transaction.List(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
 	router.HandleFunc("/ping", pingHandler).Methods(http.MethodGet)
 	router.HandleFunc("/createuser", user.Create(dep.UserServices)).Methods(http.MethodPost).Headers(versionHeader, v1)
 	router.HandleFunc("/user/{user_id}", user.DeleteByID(dep.UserServices)).Methods(http.MethodDelete).Headers(versionHeader, v1)
@@ -41,5 +41,5 @@ func initRouter(dep dependencies) (router *mux.Router) {
 }
 
 func pingHandler(rw http.ResponseWriter, req *http.Request) {
-	fmt.Println("Hello")
+	fmt.Fprintf(rw, "Hello")
 }

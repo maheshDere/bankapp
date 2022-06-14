@@ -3,7 +3,6 @@ package transaction
 import (
 	"bankapp/api"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -38,12 +37,17 @@ func DebitAmount(service Service) http.HandlerFunc {
 		})
 	})
 }
-func FindByID(service Service) http.HandlerFunc {
+func List(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		fmt.Println("Inside the FindByID handler")
-		vars := mux.Vars(req)
+		var df listRequest
+		err := json.NewDecoder(req.Body).Decode(&df)
+		if err != nil {
+			api.Error(rw, http.StatusBadRequest, err.Error())
+			return
+		}
 
-		resp, err := service.findByID(req.Context(), vars["account_id"])
+		accountId := mux.Vars(req)["account_id"]
+		resp, err := service.list(req.Context(), accountId, df)
 
 		if err == errNoAccountId {
 			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
