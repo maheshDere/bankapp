@@ -56,6 +56,6 @@ func (s *store) ListTransaction(ctx context.Context, accountId string, fromDate,
 	if err == sql.ErrNoRows {
 		return transactions, ErrAccountNotExist
 	}
-	fmt.Println("err", err)
+
 	return
 }
