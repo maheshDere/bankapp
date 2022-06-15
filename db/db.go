@@ -24,7 +24,7 @@ type Storer interface {
 	// Transaction
 	CreateTransaction(ctx context.Context, t *Transaction) (err error)
 	GetTotalBalance(ctx context.Context, accountId string) (balance float64, err error)
-	FindTransactionsById(ctx context.Context, accountId string) (transactions []Transaction, err error)
+	ListTransaction(ctx context.Context, accountId string, fromDate, toDate time.Time) (transactions []Transaction, err error)
 	CreateUserAccount(ctx context.Context, user *User) (resp CreateUserResponse, err error)
 	UpdateUser(ctx context.Context, category *User) (err error)
 	DeleteUserByID(ctx context.Context, id string) (err error)
