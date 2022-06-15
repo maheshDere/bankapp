@@ -41,7 +41,7 @@ func Load() {
 		migrationPath: readEnvString("MIGRATION_PATH"),
 		db:            newDatabaseConfig(),
 		jwtConfig: JwtConfig{
-			JwtSignature: readEnvString("JWT_SECRECT_KEY"),
+			JwtSignature: readEnvString("JWT_SECRET_KEY"),
 			TokenExpiry:  readEnvInt("TOKEN_EXPIRY"),
 		},
 	}

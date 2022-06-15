@@ -20,27 +20,16 @@ const (
 
 func initRouter(dep dependencies) (router *mux.Router) {
 	v1 := fmt.Sprintf("application/vnd.%s.v1", config.AppName())
-	// TODO: add doc
-	// v2 := fmt.Sprintf("application/vnd.%s.v2", config.AppName())
-	fmt.Println(v1)
 	router = mux.NewRouter()
-	// Remove this once authorization midlleware is completede
-	router.Use(middleware.TransactionMiddleware)
-	router.HandleFunc("/transaction/debit", transaction.Debit(dep.TransactionService)).Methods(http.MethodPost).Headers(versionHeader, v1)
-	router.HandleFunc("/transaction/credit", transaction.Credit(dep.TransactionService)).Methods(http.MethodPost).Headers(versionHeader, v1)
-	router.HandleFunc("/transaction/{account_id}", transaction.List(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
-	router.HandleFunc("/ping", pingHandler).Methods(http.MethodGet)
-	router.HandleFunc("/createuseraccount", useraccount.Create(dep.UserAccountService)).Methods(http.MethodPost).Headers(versionHeader, v1)
-	router.HandleFunc("/user/{user_id}", user.DeleteByID(dep.UserServices)).Methods(http.MethodDelete).Headers(versionHeader, v1)
-	router.HandleFunc("/users/{userId}", user.Update(dep.UserServices)).Methods(http.MethodPut)
+	router.HandleFunc("/login", login.Login(dep.UserLoginService)).Methods(http.MethodPost).Headers(versionHeader, v1)
+	router.HandleFunc("/transaction/debit", middleware.AuthorizationMiddleware(transaction.Debit(dep.TransactionService))).Methods(http.MethodPost).Headers(versionHeader, v1)
+	router.HandleFunc("/transaction/credit", middleware.AuthorizationMiddleware(transaction.Credit(dep.TransactionService))).Methods(http.MethodPost).Headers(versionHeader, v1)
+	router.HandleFunc("/transaction/{account_id}", middleware.AuthorizationMiddleware(transaction.List(dep.TransactionService))).Methods(http.MethodGet).Headers(versionHeader, v1)
+	// user
+	router.HandleFunc("/createuseraccount", middleware.AuthorizationMiddleware(useraccount.Create(dep.UserAccountService))).Methods(http.MethodPost).Headers(versionHeader, v1)
+	router.HandleFunc("/user/{user_id}", middleware.AuthorizationMiddleware(user.DeleteByID(dep.UserServices))).Methods(http.MethodDelete).Headers(versionHeader, v1)
+	router.HandleFunc("/users/{userId}", middleware.AuthorizationMiddleware(user.Update(dep.UserServices))).Methods(http.MethodPut)
 	//Login
 	router.HandleFunc("/login", login.Login(dep.UserLoginService)).Methods(http.MethodPost).Headers(versionHeader, v1)
-
-	//User
-	router.HandleFunc("/createuser", middleware.AuthorizationMiddleware(useraccount.Create(dep.UserAccountService), "createUser")).Methods(http.MethodPost).Headers(versionHeader, v1)
 	return
-}
-
-func pingHandler(rw http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(rw, "Hello")
 }

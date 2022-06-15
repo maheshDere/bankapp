@@ -1,17 +1,26 @@
 package db
 
 import (
+	"bankapp/utils"
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 )
 
 const (
-	findUserByEmailQuery = `SELECT * FROM users WHERE email = $1`
+	createQuery = `INSERT INTO users (
+		id,name,email,password,role_type,created_at,updated_at)
+		VALUES($1,$2,$3,$4,$5,$6,$7)
+	`
+	findUserByEmailQuery = `SELECT id, name, email, password, role_type FROM users WHERE email = $1`
 
 	deleteUserByIDQuery = `DELETE FROM users WHERE id = $1`
 	updateUserQuery     = "UPDATE users SET name=$1 ,password=$2,updated_at=$3 where id=$4"
+	//Accountant details
+	accountantEmail    = "accountant@bank.com"
+	accountantPassword = "Josh@123"
+	accountantName     = "Josh"
+	accountantRoleType = "accountant"
 )
 
 type User struct {
@@ -37,11 +46,9 @@ func (s *store) UpdateUser(ctx context.Context, user *User) (err error) {
 }
 
 func (s *store) FindUserByEmail(ctx context.Context, email string) (user User, err error) {
-	fmt.Println("Inside FindUserByEmail method db")
 	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
 		return s.db.GetContext(ctx, &user, findUserByEmailQuery, email)
 	})
-	// TODO: handle error
 	return
 }
 
@@ -57,4 +64,26 @@ func (s *store) DeleteUserByID(ctx context.Context, id string) (err error) {
 		}
 		return err
 	})
+}
+
+func CreateAccountant(s *store) (err error) {
+	var user User
+	err = s.db.QueryRow(findUserByEmailQuery, accountantEmail).Scan(&user)
+	flag := user == User{}
+	if flag {
+		now := time.Now()
+		_, err = s.db.Exec(createQuery,
+			utils.GetUniqueId(),
+			accountantName,
+			accountantEmail,
+			accountantPassword,
+			accountantRoleType,
+			now,
+			now,
+		)
+		if err != nil {
+			return ErrCreatingAccountant
+		}
+	}
+	return
 }
