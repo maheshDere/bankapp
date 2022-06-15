@@ -3,15 +3,16 @@ package user
 import (
 	"bankapp/db"
 	"context"
+	"errors"
 	"fmt"
 
 	"go.uber.org/zap"
 )
 
 type Service interface {
-	update(ctx context.Context, req updateRequest, userId string) (err error)
-	create(ctx context.Context, req createRequest) (err error)
-	deleteByID(ctx context.Context, id string) (err error)
+	Update(ctx context.Context, req UpdateRequest, userId string) (err error)
+	Create(ctx context.Context, req CreateRequest) (err error)
+	DeleteByID(ctx context.Context, id string) (err error)
 }
 
 type userService struct {
@@ -19,8 +20,8 @@ type userService struct {
 	logger *zap.SugaredLogger
 }
 
-func (cs *userService) update(ctx context.Context, c updateRequest, userID string) (err error) {
-	err = c.Validate()
+func (cs *userService) Update(ctx context.Context, c UpdateRequest, userID string) (err error) {
+	err = errors.New("validation error")
 	if err != nil {
 		cs.logger.Error("Invalid Request for category update", "err", err.Error(), "users", c)
 		return
@@ -39,7 +40,7 @@ func (cs *userService) update(ctx context.Context, c updateRequest, userID strin
 	return
 }
 
-func (us *userService) create(ctx context.Context, req createRequest) (err error) {
+func (us *userService) Create(ctx context.Context, req CreateRequest) (err error) {
 	fmt.Println("Inside create user service")
 
 	err = us.store.CreateUser(ctx, &db.User{
@@ -54,7 +55,7 @@ func (us *userService) create(ctx context.Context, req createRequest) (err error
 	return
 }
 
-func (cs *userService) deleteByID(ctx context.Context, id string) (err error) {
+func (cs *userService) DeleteByID(ctx context.Context, id string) (err error) {
 	err = cs.store.DeleteUserByID(ctx, id)
 	if err == db.ErrUserNotExist {
 		cs.logger.Error("User Not present", "err", err.Error(), "user_id", id)

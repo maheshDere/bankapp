@@ -12,7 +12,7 @@ import (
 
 func Update(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		var c updateRequest
+		var c UpdateRequest
 		userId := mux.Vars(req)["userId"]
 		if userId == "" {
 			api.Error(rw, http.StatusBadRequest, api.Response{
@@ -27,7 +27,7 @@ func Update(service Service) http.HandlerFunc {
 			return
 		}
 
-		err = service.update(req.Context(), c, userId)
+		err = service.Update(req.Context(), c, userId)
 		if isBadRequest(err) {
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
 			return
@@ -37,7 +37,7 @@ func Update(service Service) http.HandlerFunc {
 			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
 			return
 		}
-		api.Success(rw, http.StatusOK, api.Response{Message: "Updated Successfully"})
+		api.Success(rw, http.StatusBadRequest, api.Response{Message: "Updated Successfully"})
 	})
 
 }
@@ -48,12 +48,12 @@ func isBadRequest(err error) bool {
 func Create(service Service) http.HandlerFunc {
 
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		var cr createRequest
+		var cr CreateRequest
 		_ = json.NewDecoder(req.Body).Decode(&cr)
 		//add error handling code here
 
 		fmt.Println("In create cr is --> ", cr)
-		_ = service.create(req.Context(), cr)
+		_ = service.Create(req.Context(), cr)
 
 		//add error handling code and check is req good or not
 		api.Success(rw, http.StatusCreated, api.Response{Message: "User created sucessfully"})
@@ -64,7 +64,7 @@ func DeleteByID(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 
-		err := service.deleteByID(req.Context(), vars["user_id"])
+		err := service.DeleteByID(req.Context(), vars["user_id"])
 		if err == db.ErrUserNotExist {
 			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
 		}
