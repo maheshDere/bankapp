@@ -18,10 +18,10 @@ const (
 
 type Storer interface {
 	// Account
-	FindByUserID(ctx context.Context, userID string) (acc Account, err error)
+	FindAccountByUserID(ctx context.Context, userID string) (acc Account, err error)
 	FindUserByEmail(ctx context.Context, email string) (user User, err error)
 	// Transaction
-	DebitTransaction(ctx context.Context, t *Transaction) (err error)
+	CreateTransaction(ctx context.Context, t *Transaction) (err error)
 	GetTotalBalance(ctx context.Context, accountId string) (balance float64, err error)
 	ListTransaction(ctx context.Context, accountId string, fromDate, toDate time.Time) (transactions []Transaction, err error)
 	CreateUser(ctx context.Context, user *User) (err error)

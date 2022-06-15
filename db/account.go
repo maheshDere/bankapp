@@ -16,7 +16,7 @@ type Account struct {
 	CreatedAt   string `db:"created_at"`
 }
 
-func (s *store) FindByUserID(ctx context.Context, userID string) (acc Account, err error) {
+func (s *store) FindAccountByUserID(ctx context.Context, userID string) (acc Account, err error) {
 	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
 		return s.db.GetContext(ctx, &acc, findByUserID, userID)
 	})

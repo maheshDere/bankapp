@@ -4,11 +4,11 @@ import (
 	"bankapp/db"
 )
 
-type debitRequest struct {
+type debitCreditRequest struct {
 	Amount float64 `json:"amount"`
 }
 
-func (d debitRequest) Validate() error {
+func (d debitCreditRequest) Validate() error {
 	if d.Amount <= 0 {
 		return invalidAmount
 	}
@@ -18,6 +18,11 @@ func (d debitRequest) Validate() error {
 type listRequest struct {
 	FromDate string `json:"fromdate"`
 	ToDate   string `json:"todate"`
+}
+
+type createTransactionResponse struct {
+	Message      string  `json:"message"`
+	TotalBalance float64 `json:"balance"`
 }
 
 type Response struct {
