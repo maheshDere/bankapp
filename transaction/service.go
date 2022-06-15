@@ -83,8 +83,7 @@ func (cs *service) list(ctx context.Context, accountId string, req listRequest) 
 		cs.logger.Error("Error while parsing", "err", err.Error())
 		return
 	}
-	fmt.Println(fromDate, toDate)
-	// to :=
+
 	transaction, err := cs.store.ListTransaction(ctx, accountId, fromDate, toDate)
 	if err == db.ErrAccountNotExist {
 		cs.logger.Warn("No Account present", "err", err.Error())
