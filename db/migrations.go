@@ -67,14 +67,11 @@ func CreateMigrationFile(filename string) error {
 		return err
 	}
 
-	fmt.Printf("created %s\n", upMigrationFilePath)
-
 	if err := createFile(downMigrationFilePath); err != nil {
 		os.Remove(upMigrationFilePath)
 		return err
 	}
 
-	fmt.Printf("created %s\n", downMigrationFilePath)
 	return nil
 }
 

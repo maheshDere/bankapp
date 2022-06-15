@@ -2,17 +2,17 @@ package transaction
 
 import (
 	"bankapp/db"
+	"bankapp/login"
 	"bankapp/utils"
 	"context"
-	"fmt"
 
 	"go.uber.org/zap"
 )
 
 type Service interface {
-	debitAmount(ctx context.Context, req debitCreditRequest) (balance float64, err error)
-	list(ctx context.Context, accId string, d listRequest) (response Response, err error)
-	creditAmount(ctx context.Context, req debitCreditRequest) (balance float64, err error)
+	debitAmount(ctx context.Context, req DebitCreditRequest) (balance float64, err error)
+	list(ctx context.Context, d ListRequest) (response Response, err error)
+	creditAmount(ctx context.Context, req DebitCreditRequest) (balance float64, err error)
 }
 
 type service struct {
@@ -20,32 +20,31 @@ type service struct {
 	logger *zap.SugaredLogger
 }
 
-func (s *service) debitAmount(ctx context.Context, req debitCreditRequest) (balance float64, err error) {
+func (s *service) debitAmount(ctx context.Context, req DebitCreditRequest) (balance float64, err error) {
 	err = req.Validate()
 	if err != nil {
-		s.logger.Error("Invalid amount for debit transaction", "err", err.Error())
+		s.logger.Warn("Error debit transaction", "err", err.Error(), "transaction", req)
 		return
 	}
 
-	// expecting jwt payload from ctx
-	userID, ok := ctx.Value("userID").(string)
-	if !ok {
-		s.logger.Warn("Invalid user Id in jwt payload", "err", invalidUserID.Error())
+	payload, ok := ctx.Value("claims").(*login.Claims)
+	if !ok || payload.ID == "" {
+		s.logger.Warn("Invalid jwt playload in debit transaction", "msg", invalidUserID.Error(), "transaction", ctx.Value("claims"))
 		return balance, invalidUserID
 	}
 
-	account, err := s.store.FindAccountByUserID(ctx, userID)
+	account, err := s.store.FindAccountByUserID(ctx, payload.ID)
 	if err == db.NoAccountRecordForUserID {
-		s.logger.Warn("No account found for the userId", "err", err.Error())
+		s.logger.Warn("Error debit transaction", "msg", err.Error(), "transaction", req, payload)
 		return balance, invalidUserID
 	}
 
 	if err != nil {
-		s.logger.Error("Failed getting account details", "msg", err.Error(), req, userID)
+		s.logger.Error("Error debit transaction", "msg", err.Error(), "transaction", req, payload)
 		return balance, err
 	}
 
-	account.UserID = userID
+	account.UserID = payload.ID
 	t := &db.Transaction{
 		ID:        utils.GetUniqueId(),
 		Amount:    req.Amount,
@@ -55,13 +54,13 @@ func (s *service) debitAmount(ctx context.Context, req debitCreditRequest) (bala
 
 	balance, err = s.store.GetTotalBalance(ctx, account.ID)
 	if err != db.NoTransactions && err != nil {
-		s.logger.Error("Error while getting account balance", "msg", err.Error(), req, account.ID)
+		s.logger.Error("Error debit transaction", "msg", err.Error(), req, account.ID)
 		return
 	}
 
 	// Checking for balance
 	if (balance - req.Amount) < 0 {
-		s.logger.Warn("Insufficient funds for debit", "err", balanceLow.Error())
+		s.logger.Warn("Error debit transaction", "err", balanceLow.Error(), "transaction", req, balance)
 		return balance, balanceLow
 	}
 
@@ -75,32 +74,32 @@ func (s *service) debitAmount(ctx context.Context, req debitCreditRequest) (bala
 	return
 }
 
-func (s *service) creditAmount(ctx context.Context, req debitCreditRequest) (balance float64, err error) {
+func (s *service) creditAmount(ctx context.Context, req DebitCreditRequest) (balance float64, err error) {
 	err = req.Validate()
 	if err != nil {
-		s.logger.Error("Invalid amount for debit transaction", "err", err.Error())
+		s.logger.Warn("Error credit transaction", "err", err.Error(), "transaction", req)
 		return
 	}
 
 	// expecting jwt payload from ctx
-	userID, ok := ctx.Value("userID").(string)
-	if !ok {
-		s.logger.Error("Invalid user Id in jwt payload", "err", invalidUserID.Error())
+	payload, ok := ctx.Value("claims").(*login.Claims)
+	if !ok || payload.ID == "" {
+		s.logger.Warn("Invalid jwt playload in credit transaction", "msg", invalidUserID.Error(), "transaction", ctx.Value("claims"))
 		return balance, invalidUserID
 	}
 
-	account, err := s.store.FindAccountByUserID(ctx, userID)
+	account, err := s.store.FindAccountByUserID(ctx, payload.ID)
 	if err == db.NoAccountRecordForUserID {
-		s.logger.Error("No account found for the userId", "err", err.Error())
+		s.logger.Error("Error credit transaction", "err", err.Error())
 		return balance, invalidUserID
 	}
 
 	if err != nil {
-		s.logger.Error("Failed getting account details", "msg", err.Error(), req, userID)
+		s.logger.Error("Error credit transaction", "msg", err.Error(), "transaction", req, payload.ID)
 		return balance, err
 	}
 
-	account.UserID = userID
+	account.UserID = payload.ID
 	t := &db.Transaction{
 		ID:        utils.GetUniqueId(),
 		Amount:    req.Amount,
@@ -110,39 +109,58 @@ func (s *service) creditAmount(ctx context.Context, req debitCreditRequest) (bal
 
 	err = s.store.CreateTransaction(ctx, t)
 	if err != nil {
-		s.logger.Error("Error credit transaction", "msg", err.Error(), req, t)
+		s.logger.Error("Error credit transaction", "msg", err.Error(), "transaction", req, t)
 		return
 	}
 
 	balance, err = s.store.GetTotalBalance(ctx, account.ID)
 	if err != db.NoTransactions && err != nil {
-		fmt.Println(err)
-		s.logger.Error("Error while getting account balance in credit transaction", "msg", err.Error(), req, account.ID)
+		s.logger.Error("Error credit transaction", "err", err.Error(), "transaction", req, account.ID)
 		return
 	}
 	return
 }
 
-func (cs *service) list(ctx context.Context, accountId string, req listRequest) (response Response, err error) {
+func (cs *service) list(ctx context.Context, req ListRequest) (response Response, err error) {
 	response.Transactions = make([]db.Transaction, 0)
 	fromDate, err := utils.ParseStringToTime(req.FromDate)
 	if err != nil {
-		cs.logger.Error("Error while parsing", "err", err.Error())
+		cs.logger.Error("Error parsing fromDate", "err", err.Error(), "transaction", req)
 		return
 	}
 	toDate, err := utils.ParseStringToTime(req.ToDate)
 	if err != nil {
-		cs.logger.Error("Error while parsing", "err", err.Error())
+		cs.logger.Error("Error while parsing toDate", "err", err.Error(), "transcation", req)
 		return
 	}
 
-	transaction, err := cs.store.ListTransaction(ctx, accountId, fromDate, toDate)
+	// Payload of JWT
+	payload, ok := ctx.Value("claims").(*login.Claims)
+	if !ok || payload.ID == "" {
+		cs.logger.Warn("Invalid jwt playload in list transaction", "msg", invalidUserID.Error(), "transaction", ctx.Value("claims"))
+		return
+	}
+
+	// Get account id
+	account, err := cs.store.FindAccountByUserID(ctx, payload.ID)
+	if err == db.NoAccountRecordForUserID {
+		cs.logger.Warn("Error list transaction", "msg", err.Error(), "transaction", req, payload)
+		return response, invalidUserID
+	}
+
+	if err != nil {
+		cs.logger.Error("Error list transaction", "msg", err.Error(), "transaction", req, payload)
+		return response, err
+	}
+
+	// Get transaction list
+	transaction, err := cs.store.ListTransaction(ctx, account.ID, fromDate, toDate)
 	if err == db.ErrAccountNotExist {
 		cs.logger.Warn("No Account present", "err", err.Error())
 		return response, errNoAccountId
 	}
 	if err != nil {
-		cs.logger.Error("Error finding Account", "err", err.Error(), "account_id", accountId)
+		cs.logger.Error("Error finding Account", "err", err.Error(), "account_id", account.ID)
 		return
 	}
 	if transaction != nil {

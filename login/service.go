@@ -21,12 +21,6 @@ type loginService struct {
 	logger *zap.SugaredLogger
 }
 
-type Claims struct {
-	Email    string `json:"email"`
-	RoleType string `json:"roleType"`
-	jwt.StandardClaims
-}
-
 func (ls *loginService) login(ctx context.Context, ul loginRequest) (tokenString string, err error) {
 	user, err := ls.store.FindUserByEmail(ctx, ul.Email)
 	// TODO: Handle the err
@@ -46,7 +40,7 @@ func (ls *loginService) login(ctx context.Context, ul loginRequest) (tokenString
 	}
 	ls.logger.Info("User is valid, generating the token")
 	// Generate the Token
-	tokenString, err = generateJWT(user.Email, user.RoleType)
+	tokenString, err = generateJWT(user.ID, user.Email, user.RoleType)
 	return
 }
 
@@ -55,9 +49,10 @@ func authenticateUser(user db.User, pwd string) bool {
 	return err == nil
 }
 
-func generateJWT(email, roleType string) (tokenString string, err error) {
+func generateJWT(id, email, roleType string) (tokenString string, err error) {
 	expirationTime := time.Now().Add(time.Minute * time.Duration(config.InitJWTConfiguration().TokenExpiry)).Unix()
 	claims := &Claims{
+		ID:       id,
 		Email:    email,
 		RoleType: roleType,
 		StandardClaims: jwt.StandardClaims{

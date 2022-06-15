@@ -22,7 +22,7 @@ func AuthorizationMiddleware(handler http.Handler, roleType string) http.Handler
 			return
 		}
 		if claims.RoleType == roleType {
-			handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "claims", claims)))
+			handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "claims", &claims)))
 		} else {
 			api.Error(w, http.StatusForbidden, api.Response{Message: "Access Denied"})
 		}

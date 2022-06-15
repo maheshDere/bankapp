@@ -20,7 +20,7 @@ type userService struct {
 func (cs *userService) update(ctx context.Context, c updateRequest, userID string) (err error) {
 	err = c.Validate()
 	if err != nil {
-		cs.logger.Error("Invalid Request for category update", "err", err.Error(), "users", c)
+		cs.logger.Error("Invalid Request for user update", "err", err.Error(), "users", c)
 		return
 	}
 

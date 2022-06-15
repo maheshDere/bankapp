@@ -2,6 +2,7 @@ package user
 
 import (
 	"bankapp/api"
+	"bankapp/app"
 	"bankapp/db"
 	"encoding/json"
 	"net/http"
@@ -12,16 +13,18 @@ import (
 func Update(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		var c updateRequest
-		userId := mux.Vars(req)["userId"]
+		userId := mux.Vars(req)["user_id"]
 		if userId == "" {
+			app.GetLogger().Warn(errNoUserId.Error(), "msg", userId, "user", req)
 			api.Error(rw, http.StatusBadRequest, api.Response{
-				Message: "Invalid user id",
+				Message: errNoUserId.Error(),
 			})
 			return
 		}
 
 		err := json.NewDecoder(req.Body).Decode(&c)
 		if err != nil {
+			app.GetLogger().Warn("Error updating user", "msg", err.Error(), "user", req.Body)
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
 			return
 		}
@@ -36,6 +39,7 @@ func Update(service Service) http.HandlerFunc {
 			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
 			return
 		}
+
 		api.Success(rw, http.StatusOK, api.Response{Message: "Updated Successfully"})
 	})
 
@@ -47,11 +51,21 @@ func isBadRequest(err error) bool {
 func DeleteByID(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
+		userID := vars["user_id"]
+		if userID == "" {
+			app.GetLogger().Warn(errNoUserId.Error(), "msg", userID, "user", req)
+			api.Error(rw, http.StatusBadRequest, api.Response{
+				Message: errNoUserId.Error(),
+			})
+			return
+		}
 
-		err := service.deleteByID(req.Context(), vars["user_id"])
+		err := service.deleteByID(req.Context(), userID)
 		if err == db.ErrUserNotExist {
 			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
+			return
 		}
+
 		if err != nil {
 			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
 			return

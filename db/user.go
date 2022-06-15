@@ -81,9 +81,6 @@ func CreateAccountant(s *store) (err error) {
 			now,
 			now,
 		)
-		if err != nil {
-			return ErrCreatingAccountant
-		}
 	}
 	return
 }

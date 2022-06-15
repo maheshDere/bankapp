@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 )
 
@@ -50,7 +49,6 @@ func (s *store) GetTotalBalance(ctx context.Context, accountId string) (balance 
 
 func (s *store) ListTransaction(ctx context.Context, accountId string, fromDate, toDate time.Time) (transactions []Transaction, err error) {
 	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
-		fmt.Println(accountId)
 		return s.db.SelectContext(ctx, &transactions, listTransactionsQuery, accountId, fromDate, toDate)
 	})
 	if err == sql.ErrNoRows {
