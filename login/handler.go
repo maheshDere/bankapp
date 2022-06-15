@@ -16,10 +16,9 @@ func Login(service Service) http.HandlerFunc {
 		}
 		tokenString, err := service.login(req.Context(), u)
 		if err != nil {
-			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
+			api.Error(rw, http.StatusUnauthorized, api.Response{Message: err.Error()})
 			return
 		}
-
 		api.Success(rw, http.StatusCreated, api.Response{Message: tokenString})
 	})
 }

@@ -6,13 +6,15 @@ import (
 	"bankapp/login"
 	"bankapp/transaction"
 	"bankapp/user"
-	"fmt"
+	"bankapp/useraccount"
+	"bankapp/utils"
 )
 
 type dependencies struct {
 	UserLoginService   login.Service
 	TransactionService transaction.Service
 	UserServices       user.Service
+	UserAccountService useraccount.Service
 }
 
 func initDependencies() (dependencies, error) {
@@ -27,12 +29,16 @@ func initDependencies() (dependencies, error) {
 
 	loginService := login.NewService(dbStore, logger)
 
-	// remove println later
+	userAccountService := useraccount.NewService(dbStore, logger)
+	err := db.CreateAccountant(dbStore)
+	if err != nil && !utils.CheckIfDuplicateKeyError(err) {
+		return dependencies{}, err
+	}
 
-	fmt.Println(logger, dbStore)
 	return dependencies{
 		TransactionService: transactionService,
 		UserServices:       userService,
 		UserLoginService:   loginService,
+		UserAccountService: userAccountService,
 	}, nil
 }

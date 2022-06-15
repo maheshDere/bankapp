@@ -12,8 +12,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var secretKey = []byte(config.InitJWTConfiguration().JwtSignature)
-
 type Service interface {
 	login(ctx context.Context, req loginRequest) (tokenString string, err error)
 }
@@ -23,28 +21,26 @@ type loginService struct {
 	logger *zap.SugaredLogger
 }
 
-type Claims struct {
-	Email    string `json:"email"`
-	RoleType string `json:"roleType"`
-	jwt.StandardClaims
-}
-
 func (ls *loginService) login(ctx context.Context, ul loginRequest) (tokenString string, err error) {
 	user, err := ls.store.FindUserByEmail(ctx, ul.Email)
 	// TODO: Handle the err
+	if err == db.ErrUserNotExist {
+		ls.logger.Warn("User Not present", "warn", err.Error(), "email ", ul.Email)
+		return
+	}
 	if user.Email == "" {
 		err = errors.New("Invalid Email or Password")
 		return
 	}
 	// Authenticate the user
 	matched := authenticateUser(user, ul.Password)
-	// TODO: Handle wrong password
 	if !matched {
 		err = errors.New("Invalid Email or Password")
 		return
 	}
-	// Generate the
-	tokenString, err = generateJWT(user.Email, user.RoleType)
+	ls.logger.Info("User is valid, generating the token")
+	// Generate the Token
+	tokenString, err = generateJWT(user.ID, user.Email, user.RoleType)
 	return
 }
 
@@ -53,9 +49,10 @@ func authenticateUser(user db.User, pwd string) bool {
 	return err == nil
 }
 
-func generateJWT(email, roleType string) (tokenString string, err error) {
+func generateJWT(id, email, roleType string) (tokenString string, err error) {
 	expirationTime := time.Now().Add(time.Minute * time.Duration(config.InitJWTConfiguration().TokenExpiry)).Unix()
 	claims := &Claims{
+		ID:       id,
 		Email:    email,
 		RoleType: roleType,
 		StandardClaims: jwt.StandardClaims{
@@ -65,7 +62,7 @@ func generateJWT(email, roleType string) (tokenString string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err = token.SignedString([]byte(config.InitJWTConfiguration().JwtSignature))
 	if err != nil {
-		return "", err
+		return
 	}
 	return
 }
