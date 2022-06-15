@@ -30,13 +30,13 @@ func (s *service) debitAmount(ctx context.Context, req debitCreditRequest) (bala
 	// expecting jwt payload from ctx
 	userID, ok := ctx.Value("userID").(string)
 	if !ok {
-		s.logger.Error("Invalid user Id in jwt payload", "err", invalidUserID.Error())
+		s.logger.Warn("Invalid user Id in jwt payload", "err", invalidUserID.Error())
 		return balance, invalidUserID
 	}
 
 	account, err := s.store.FindAccountByUserID(ctx, userID)
 	if err == db.NoAccountRecordForUserID {
-		s.logger.Error("No account found for the userId", "err", err.Error())
+		s.logger.Warn("No account found for the userId", "err", err.Error())
 		return balance, invalidUserID
 	}
 
@@ -58,9 +58,10 @@ func (s *service) debitAmount(ctx context.Context, req debitCreditRequest) (bala
 		s.logger.Error("Error while getting account balance", "msg", err.Error(), req, account.ID)
 		return
 	}
+
 	// Checking for balance
 	if (balance - req.Amount) < 0 {
-		s.logger.Error("Insufficient funds for debit", "err", balanceLow.Error())
+		s.logger.Warn("Insufficient funds for debit", "err", balanceLow.Error())
 		return balance, balanceLow
 	}
 
@@ -69,6 +70,7 @@ func (s *service) debitAmount(ctx context.Context, req debitCreditRequest) (bala
 		s.logger.Error("Error debit transaction", "msg", err.Error(), req, t)
 		return
 	}
+
 	balance -= req.Amount
 	return
 }

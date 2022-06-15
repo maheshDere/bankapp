@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func DebitAmount(service Service) http.HandlerFunc {
+func Debit(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var d debitCreditRequest
 		err := json.NewDecoder(r.Body).Decode(&d)
@@ -19,7 +19,7 @@ func DebitAmount(service Service) http.HandlerFunc {
 		}
 
 		balance, err := service.debitAmount(r.Context(), d)
-		if isBadRequest(err) || err == invalidUserID {
+		if isBadRequest(err) || err == invalidUserID || err == balanceLow {
 			api.Error(w, http.StatusBadRequest, api.Response{
 				Message: err.Error(),
 			})
@@ -50,7 +50,7 @@ func Credit(service Service) http.HandlerFunc {
 		}
 
 		balance, err := service.creditAmount(r.Context(), d)
-		if isBadRequest(err) || err == invalidUserID {
+		if isBadRequest(err) || err == invalidUserID || err == balanceLow {
 			api.Error(w, http.StatusBadRequest, api.Response{
 				Message: err.Error(),
 			})

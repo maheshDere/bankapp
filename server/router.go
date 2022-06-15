@@ -25,7 +25,7 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	router = mux.NewRouter()
 	// Remove this once authorization midlleware is completede
 	router.Use(middleware.TransactionMiddleware)
-	router.HandleFunc("/transaction/debit", transaction.DebitAmount(dep.TransactionService)).Methods(http.MethodPost).Headers(versionHeader, v1)
+	router.HandleFunc("/transaction/debit", transaction.Debit(dep.TransactionService)).Methods(http.MethodPost).Headers(versionHeader, v1)
 	router.HandleFunc("/transaction/credit", transaction.Credit(dep.TransactionService)).Methods(http.MethodPost).Headers(versionHeader, v1)
 	router.HandleFunc("/transaction/{account_id}", transaction.List(dep.TransactionService)).Methods(http.MethodGet).Headers(versionHeader, v1)
 	router.HandleFunc("/ping", pingHandler).Methods(http.MethodGet)
