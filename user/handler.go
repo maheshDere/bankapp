@@ -13,9 +13,9 @@ import (
 func Update(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		var c updateRequest
-		userId := mux.Vars(req)["user_id"]
-		if userId == "" {
-			app.GetLogger().Warn(errNoUserId.Error(), "msg", userId, "user", req)
+		userID := mux.Vars(req)["user_id"]
+		if userID == "" {
+			app.GetLogger().Warn(errNoUserId.Error(), "msg", userID, "user", req)
 			api.Error(rw, http.StatusBadRequest, api.Response{
 				Message: errNoUserId.Error(),
 			})
@@ -29,7 +29,7 @@ func Update(service Service) http.HandlerFunc {
 			return
 		}
 
-		err = service.update(req.Context(), c, userId)
+		err = service.update(req.Context(), c, userID)
 		if isBadRequest(err) {
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
 			return
@@ -40,7 +40,7 @@ func Update(service Service) http.HandlerFunc {
 			return
 		}
 
-		api.Success(rw, http.StatusOK, api.Response{Message: "Updated Successfully"})
+		api.Success(rw, http.StatusOK, api.Response{Message: "Updated user Successfully"})
 	})
 
 }
@@ -53,7 +53,7 @@ func DeleteByID(service Service) http.HandlerFunc {
 		vars := mux.Vars(req)
 		userID := vars["user_id"]
 		if userID == "" {
-			app.GetLogger().Warn(errNoUserId.Error(), "msg", userID, "user", req)
+			app.GetLogger().Warn(errNoUserId.Error(), "msg", "user", req)
 			api.Error(rw, http.StatusBadRequest, api.Response{
 				Message: errNoUserId.Error(),
 			})
@@ -71,6 +71,6 @@ func DeleteByID(service Service) http.HandlerFunc {
 			return
 		}
 
-		api.Success(rw, http.StatusOK, api.Response{Message: "Deleted Successfully"})
+		api.Success(rw, http.StatusOK, api.Response{Message: "Deleted user Successfully"})
 	})
 }

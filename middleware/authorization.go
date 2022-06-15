@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bankapp/api"
+	"bankapp/app"
 	"bankapp/config"
 	"bankapp/login"
 	"context"
@@ -18,15 +19,18 @@ func AuthorizationMiddleware(handler http.Handler, roleType string) http.Handler
 		token, err := readToken(r)
 		claims, err := validateToken(token)
 		if err != nil {
+			app.GetLogger().Warn("Unauthorized user for %v", r.URL.RequestURI(), claims)
 			api.Error(w, http.StatusUnauthorized, api.Response{Message: err.Error()})
 			return
 		}
-		if claims.RoleType == roleType {
-			handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "claims", &claims)))
-		} else {
+
+		if !strings.EqualFold(claims.RoleType, roleType) {
+			app.GetLogger().Warn("Access denied for %v for %v", claims.Email, r.URL.RequestURI())
 			api.Error(w, http.StatusForbidden, api.Response{Message: "Access Denied"})
+			return
 		}
-		return
+
+		handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "claims", &claims)))
 	}
 }
 

@@ -71,6 +71,7 @@ func CreateAccountant(s *store) (err error) {
 	err = s.db.QueryRow(findUserByEmailQuery, accountantEmail).Scan(&user)
 	flag := user == User{}
 	if flag {
+		err = nil
 		now := time.Now()
 		_, err = s.db.Exec(createQuery,
 			utils.GetUniqueId(),
