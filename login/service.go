@@ -13,7 +13,7 @@ import (
 )
 
 type Service interface {
-	login(ctx context.Context, req loginRequest) (tokenString string, err error)
+	login(ctx context.Context, req LoginRequest) (tokenString string, err error)
 }
 
 type loginService struct {
@@ -21,21 +21,23 @@ type loginService struct {
 	logger *zap.SugaredLogger
 }
 
-func (ls *loginService) login(ctx context.Context, ul loginRequest) (tokenString string, err error) {
-	user, err := ls.store.FindUserByEmail(ctx, ul.Email)
-	// TODO: Handle the err
-	if err == db.ErrUserNotExist {
-		ls.logger.Warn("User Not present", "warn", err.Error(), "email ", ul.Email)
+func (ls *loginService) login(ctx context.Context, ul LoginRequest) (tokenString string, err error) {
+	err = ul.Validate()
+	if err != nil {
+		ls.logger.Warn("You have entered an invalid Email or Password ", "warn", err.Error())
 		return
 	}
-	if user.Email == "" {
+	user, err := ls.store.FindUserByEmail(ctx, ul.Email)
+	if err != nil {
 		err = errors.New("Invalid Email or Password")
+		ls.logger.Warn("You have entered an invalid Email or Password ", "warn ", err.Error())
 		return
 	}
 	// Authenticate the user
 	matched := authenticateUser(user, ul.Password)
 	if !matched {
 		err = errors.New("Invalid Email or Password")
+		ls.logger.Warn("You have entered an invalid Email or Password ", "warn", err.Error())
 		return
 	}
 	ls.logger.Info("User is valid, generating the token")

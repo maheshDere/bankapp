@@ -18,7 +18,7 @@ const (
 	updateUserQuery     = "UPDATE users SET name=$1 ,password=$2,updated_at=$3 where id=$4"
 	//Accountant details
 	accountantEmail    = "accountant@bank.com"
-	accountantPassword = "Josh@123"
+	accountantPassword = "$2a$14$AVYciPVtQpuVAFGTemDgfuLejER1LdJ048eeyzm.FkH7CPvYziu7K"
 	accountantName     = "Josh"
 	accountantRoleType = "accountant"
 )
