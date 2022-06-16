@@ -36,7 +36,6 @@ func AuthorizationMiddleware(handler http.Handler, roleType string) http.Handler
 
 //readToken method will read the Authorization header and will return the token string or error
 func readToken(r *http.Request) (token string, err error) {
-	//TODO: header missing error
 	authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 	if len(authHeader) != 2 {
 		err = errors.New("Malform header")
