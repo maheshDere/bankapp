@@ -74,3 +74,20 @@ func DeleteByID(service Service) http.HandlerFunc {
 		api.Success(rw, http.StatusOK, api.Response{Message: "Deleted user Successfully"})
 	})
 }
+
+//rak
+//list handler
+func ListAllUsers(service Service) http.HandlerFunc {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		users, err := service.listAllUsers(req.Context())
+		if err == db.ErrNoUserExist {
+			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
+			return
+		}
+		if err != nil {
+			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
+			return
+		}
+		api.Success(rw, http.StatusOK, users)
+	})
+}
