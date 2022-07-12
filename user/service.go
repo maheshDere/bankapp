@@ -10,6 +10,8 @@ import (
 type Service interface {
 	update(ctx context.Context, req updateRequest, userId string) (err error)
 	deleteByID(ctx context.Context, id string) (err error)
+	//rak
+	listAllUsers(ctx context.Context) (users []db.User, err error)
 }
 
 type userService struct {
@@ -48,6 +50,32 @@ func (cs *userService) deleteByID(ctx context.Context, id string) (err error) {
 		return
 	}
 
+	return
+}
+
+//rak
+//list users service
+func (cs *userService) listAllUsers(ctx context.Context) (users []db.User, err error) {
+	// var users []db.User
+	// dbUsers, err := cs.store.ListUsers(ctx)
+
+	// for _, u := range dbUsers {
+	// 	if u.Email == "accountant@bank.com" {
+	// 		continue
+	// 	}
+	// 	u.Password = "reducted"
+	// 	dbUsers = append(dbUsers, u)
+	// }
+	users, err = cs.store.ListUsers(ctx)
+
+	if err == db.ErrNoUserExist {
+		cs.logger.Error("User not present in db", "err", err.Error(), "users", users)
+		return
+	}
+	if err != nil {
+		cs.logger.Error("Error fetching data", "err", err.Error(), "users", users)
+		return
+	}
 	return
 }
 
