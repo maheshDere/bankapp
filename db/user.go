@@ -21,6 +21,9 @@ const (
 	accountantPassword = "Josh@123"
 	accountantName     = "Josh"
 	accountantRoleType = "accountant"
+
+	//rak
+	listAllUsersQuery = "SELECT id,name,email,password,role_type FROM users"
 )
 
 type User struct {
@@ -72,16 +75,32 @@ func CreateAccountant(s *store) (err error) {
 	flag := user == User{}
 	if flag {
 		err = nil
+		//rak
+		var hashPwd string
+		hashPwd, err = HashPassword(accountantPassword)
+		if err != nil {
+			return
+		}
 		now := time.Now()
 		_, err = s.db.Exec(createQuery,
 			utils.GetUniqueId(),
 			accountantName,
 			accountantEmail,
-			accountantPassword,
+			hashPwd,
 			accountantRoleType,
 			now,
 			now,
 		)
+	}
+	return
+}
+
+//rak
+//list users:
+func (s *store) ListUsers(ctx context.Context) (user []User, err error) {
+	err = s.db.Select(&user, listAllUsersQuery)
+	if err != nil {
+		return
 	}
 	return
 }
