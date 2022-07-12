@@ -30,5 +30,9 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	router.HandleFunc("/user/{user_id}", middleware.AuthorizationMiddleware(user.Update(dep.UserServices), "accountant")).Methods(http.MethodPut)
 	//Login
 	router.HandleFunc("/login", login.Login(dep.UserLoginService)).Methods(http.MethodPost).Headers(versionHeader, v1)
+
+	//rak
+	router.HandleFunc("/users", middleware.AuthorizationMiddleware(user.ListAllUsers(dep.UserServices), "accountant")).Methods(http.MethodGet).Headers(versionHeader, v1)
+
 	return
 }
