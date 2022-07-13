@@ -24,6 +24,8 @@ func AuthorizationMiddleware(handler http.Handler, roleType string) http.Handler
 			return
 		}
 
+		// ctx := r.Context()
+
 		if !strings.EqualFold(claims.RoleType, roleType) {
 			app.GetLogger().Warn("Access denied for %v for %v", claims.Email, r.URL.RequestURI())
 			api.Error(w, http.StatusForbidden, api.Response{Message: "Access Denied"})
