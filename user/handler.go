@@ -91,3 +91,28 @@ func ListAllUsers(service Service) http.HandlerFunc {
 		api.Success(rw, http.StatusOK, users)
 	})
 }
+
+//get user by id:
+func GetUserById(service Service) http.HandlerFunc {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		vars := mux.Vars(req)
+		userID := vars["user_id"]
+		if userID == "" {
+			app.GetLogger().Warn(errNoUserId.Error(), "msg", "user", req)
+			api.Error(rw, http.StatusBadRequest, api.Response{Message: errNoUserId.Error()})
+			return
+		}
+		user, err := service.getUserById(req.Context(), userID)
+		if err == db.ErrUserNotExist {
+			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
+			return
+		}
+
+		if err != nil {
+			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
+			return
+		}
+		api.Success(rw, http.StatusOK, user)
+
+	})
+}
