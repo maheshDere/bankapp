@@ -24,7 +24,7 @@ const (
 
 	//rak
 	listAllUsersQuery = "SELECT id,name,email,password,role_type FROM users"
-	getUserByIdQuery  = "SELECT id,name,email,role_type FROM users WHERE id=$1"
+	getUserByIdQuery  = "SELECT id,name,email,password,role_type FROM users WHERE id=$1;"
 )
 
 type User struct {
