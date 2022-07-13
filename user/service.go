@@ -2,6 +2,7 @@ package user
 
 import (
 	"bankapp/db"
+	"bankapp/login"
 	"context"
 
 	"go.uber.org/zap"
@@ -12,7 +13,7 @@ type Service interface {
 	deleteByID(ctx context.Context, id string) (err error)
 	//rak
 	listAllUsers(ctx context.Context) (users []db.User, err error)
-	getUserById(ctx context.Context, id string) (user db.User, err error)
+	getUserByID(ctx context.Context, id string) (user db.User, err error)
 }
 
 type userService struct {
@@ -65,7 +66,7 @@ func (cs *userService) listAllUsers(ctx context.Context) (users []db.User, err e
 			continue
 		}
 		u.Password = "reducted"
-		dbUsers = append(dbUsers, u)
+		users = append(users, u)
 	}
 	// users, err = cs.store.ListUsers(ctx)
 
@@ -81,16 +82,44 @@ func (cs *userService) listAllUsers(ctx context.Context) (users []db.User, err e
 }
 
 //get user by id:
-func (cs *userService) getUserById(ctx context.Context, id string) (user db.User, err error) {
-	user, err = cs.store.GetUser(ctx, id)
-	if err == db.ErrUserNotExist {
-		cs.logger.Error("User not present in db", "err", err.Error(), "user", user)
+// func (cs *userService) getUserById(ctx context.Context, id string) (user db.User, err error) {
+
+// 	// user = db.User{}
+// 	dbUser, err := cs.store.GetUser(ctx, id)
+
+// 	dbUser.Password = "Reducted"
+// 	user = dbUser
+
+// 	if err == db.ErrUserNotExist {
+// 		cs.logger.Error("User not present in db", "err", err.Error(), "user", user)
+// 		return
+// 	}
+// 	if err != nil {
+// 		cs.logger.Error("Error fetching data", "err", err.Error(), "user", user)
+// 		return
+// 	}
+// 	return
+// }
+
+func (cs *userService) getUserByID(ctx context.Context, id string) (user db.User, err error) {
+
+	// payload of jwt
+	payload, ok := ctx.Value("claims").(*login.Claims)
+	if !ok || payload.ID == "" {
+		cs.logger.Warn("Invalid jwt playload in get user", "msg", invalidUserID.Error(), "user", ctx.Value("claims"))
+		return
+	}
+	//get accountant id
+	user, err = cs.store.GetUser(ctx, payload.ID)
+	if err == db.NoAccountRecordForUserID {
+		cs.logger.Warn("Error get user", "msg", err.Error(), "user", user, payload)
 		return
 	}
 	if err != nil {
-		cs.logger.Error("Error fetching data", "err", err.Error(), "user", user)
+		cs.logger.Error("Error get user", "msg", err.Error(), "user", user, payload)
 		return
 	}
+	user.Password = "reducted"
 	return
 }
 
