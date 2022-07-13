@@ -24,6 +24,7 @@ const (
 
 	//rak
 	listAllUsersQuery = "SELECT id,name,email,password,role_type FROM users"
+	getUserByIdQuery  = "SELECT id,name,email,role_type FROM users WHERE id=$1"
 )
 
 type User struct {
@@ -99,6 +100,15 @@ func CreateAccountant(s *store) (err error) {
 //list users:
 func (s *store) ListUsers(ctx context.Context) (user []User, err error) {
 	err = s.db.Select(&user, listAllUsersQuery)
+	if err != nil {
+		return
+	}
+	return
+}
+
+//get user by id
+func (s *store) GetUser(ctx context.Context, id string) (user User, err error) {
+	err = s.db.Get(&user, getUserByIdQuery, id)
 	if err != nil {
 		return
 	}
