@@ -33,6 +33,8 @@ func initRouter(dep dependencies) (router *mux.Router) {
 
 	//rak
 	router.HandleFunc("/users", middleware.AuthorizationMiddleware(user.ListAllUsers(dep.UserServices), "accountant")).Methods(http.MethodGet).Headers(versionHeader, v1)
-	router.HandleFunc("/user/{user_id}", middleware.AuthorizationMiddleware(user.GetUserById(dep.UserServices), "customer")).Methods(http.MethodGet).Headers(versionHeader, v1)
+	router.HandleFunc("/user", middleware.AuthorizationMiddleware(user.GetUserById(dep.UserServices), "customer")).Methods(http.MethodGet).Headers(versionHeader, v1)
+
+	// router.HandleFunc("/user/{user_id}", middleware.AuthorizationMiddleware(user.GetUserById(dep.UserServices), "accountant")).Methods(http.MethodGet).Headers(versionHeader, v1)
 	return
 }
