@@ -30,7 +30,7 @@ type Storer interface {
 
 	//rak
 	ListUsers(ctx context.Context) (users []User, err error)
-	// GetUser(ctx context.Context, id string) (user User, err error)
+	GetUser(ctx context.Context, id string) (user User, err error)
 }
 
 type store struct {
