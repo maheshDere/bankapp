@@ -27,6 +27,10 @@ type Storer interface {
 	CreateUserAccount(ctx context.Context, user *User) (resp CreateUserResponse, err error)
 	UpdateUser(ctx context.Context, user *User) (err error)
 	DeleteUserByID(ctx context.Context, id string) (err error)
+
+	//rak
+	ListUsers(ctx context.Context) (users []User, err error)
+	GetUser(ctx context.Context, id string) (user User, err error)
 }
 
 type store struct {

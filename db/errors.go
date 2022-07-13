@@ -9,4 +9,5 @@ var (
 	ErrUserNotExist          = errors.New("User does not exist in db")
 	ErrCreatingAccountant    = errors.New("Error while creating Accountant")
 	ErrEmailAlreadyExist     = errors.New("Email already exist!")
+	ErrNoUserExist           = errors.New("No user present in db")
 )
