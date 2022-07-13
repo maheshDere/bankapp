@@ -12,6 +12,7 @@ type Service interface {
 	deleteByID(ctx context.Context, id string) (err error)
 	//rak
 	listAllUsers(ctx context.Context) (users []db.User, err error)
+	getUserById(ctx context.Context, id string) (user db.User, err error)
 }
 
 type userService struct {
@@ -56,17 +57,17 @@ func (cs *userService) deleteByID(ctx context.Context, id string) (err error) {
 //rak
 //list users service
 func (cs *userService) listAllUsers(ctx context.Context) (users []db.User, err error) {
-	// var users []db.User
-	// dbUsers, err := cs.store.ListUsers(ctx)
+	users = make([]db.User, 0)
+	dbUsers, err := cs.store.ListUsers(ctx)
 
-	// for _, u := range dbUsers {
-	// 	if u.Email == "accountant@bank.com" {
-	// 		continue
-	// 	}
-	// 	u.Password = "reducted"
-	// 	dbUsers = append(dbUsers, u)
-	// }
-	users, err = cs.store.ListUsers(ctx)
+	for _, u := range dbUsers {
+		if u.Email == "accountant@bank.com" {
+			continue
+		}
+		u.Password = "reducted"
+		dbUsers = append(dbUsers, u)
+	}
+	// users, err = cs.store.ListUsers(ctx)
 
 	if err == db.ErrNoUserExist {
 		cs.logger.Error("User not present in db", "err", err.Error(), "users", users)
@@ -74,6 +75,20 @@ func (cs *userService) listAllUsers(ctx context.Context) (users []db.User, err e
 	}
 	if err != nil {
 		cs.logger.Error("Error fetching data", "err", err.Error(), "users", users)
+		return
+	}
+	return
+}
+
+//get user by id:
+func (cs *userService) getUserById(ctx context.Context, id string) (user db.User, err error) {
+	user, err = cs.store.GetUser(ctx, id)
+	if err == db.ErrUserNotExist {
+		cs.logger.Error("User not present in db", "err", err.Error(), "user", user)
+		return
+	}
+	if err != nil {
+		cs.logger.Error("Error fetching data", "err", err.Error(), "user", user)
 		return
 	}
 	return
